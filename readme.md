@@ -1,4 +1,4 @@
-# search_6.html — AlgoViz: Search Algorithms Visual Guide
+# search_algorithms.html — AlgoViz: Search Algorithms Visual Guide
 ## Summary for Context Preservation (upload this to a new chat to resume work)
 
 ---
