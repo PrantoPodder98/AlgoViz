@@ -1,0 +1,2551 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Algorithms — Step-by-Step Visual Guide</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&family=Nunito:wght@400;600;700&display=swap');
+
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --card: #f8fafc;
+      --border: #e2e8f0;
+      --border2: #cbd5e1;
+      --cyan: #0369a1;
+      --green: #15803d;
+      --orange: #c2410c;
+      --red: #b91c1c;
+      --purple: #6d28d9;
+      --yellow: #b45309;
+      --pink: #be185d;
+      --blue: #1d4ed8;
+      --text: #0f172a;
+      --text2: #334155;
+      --text3: #64748b;
+      --canvas-bg: #ffffff;
+      --canvas-edge: #c8d4e8;
+      --canvas-node-idle-fill: #f1f5f9;
+      --canvas-node-idle-border: #94a3b8;
+      --canvas-node-visited-fill: #e2e8f0;
+      --canvas-node-visited-border: #94a3b8;
+      --canvas-node-frontier-fill: #dcfce7;
+      --canvas-node-frontier-border: #16a34a;
+      --canvas-node-current-fill: #fff7ed;
+      --canvas-node-current-border: #ea580c;
+      --canvas-node-path-fill: #ede9fe;
+      --canvas-node-path-border: #7c3aed;
+      --canvas-node-start-fill: #dbeafe;
+      --canvas-node-start-border: #2563eb;
+      --canvas-node-goal-fill: #dcfce7;
+      --canvas-node-goal-border: #16a34a;
+      --canvas-text-dark: #1e293b;
+      --canvas-text-mid: #475569;
+      --canvas-text-light: #94a3b8;
+      --canvas-label-bg: rgba(248, 250, 252, 0.92);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOP NAV ── */
+    nav {
+      background: var(--surface);
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: stretch;
+      padding: 0 16px;
+      gap: 4px;
+      overflow-x: auto;
+      flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+    }
+
+    nav::-webkit-scrollbar {
+      height: 3px;
+    }
+
+    nav::-webkit-scrollbar-thumb {
+      background: var(--border2);
+    }
+
+    .nav-brand {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 15px;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      padding-right: 16px;
+      border-right: 2px solid var(--border);
+      margin-right: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .tab {
+      padding: 14px 16px;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: var(--text2);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all .2s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      flex-shrink: 0;
+    }
+
+    .tab:hover {
+      color: var(--text);
+      border-bottom-color: var(--border2);
+    }
+
+    .tab.active {
+      color: var(--cyan);
+      border-bottom-color: var(--cyan);
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── LEFT PANEL (visual) ── */
+    .vis-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .vis-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+
+    .vis-header .scenario-tag {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--yellow);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: 6px;
+    }
+
+    .vis-header h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .vis-header p {
+      font-size: 13px;
+      color: var(--text2);
+      margin-top: 4px;
+      max-width: 600px;
+    }
+
+    canvas {
+      flex: 1;
+      display: block;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── RIGHT PANEL (steps) ── */
+    .step-panel {
+      width: 500px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-left: 2px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      box-shadow: -2px 0 10px rgba(0, 0, 0, .06);
+    }
+
+    .step-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .step-header h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--cyan);
+      flex: 1;
+    }
+
+    /* ── SCROLLABLE CONTENT AREA ── */
+    .step-scroll {
+      flex: 1;
+      overflow-y: scroll;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 8px;
+    }
+
+    .step-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .step-scroll::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    .step-scroll::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 6px;
+    }
+
+    .step-scroll::-webkit-scrollbar-thumb:hover {
+      background: var(--text3);
+    }
+
+    /* ── ALGO EXPLANATION BANNER ── */
+    .algo-explainer {
+      margin: 12px 16px 0;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(2, 132, 199, .05), rgba(124, 58, 237, .05));
+      border: 1px solid rgba(2, 132, 199, .25);
+      border-radius: 10px;
+      padding: 12px 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .algo-explainer::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--cyan), var(--purple));
+    }
+
+    .algo-explainer-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 6px;
+      padding-left: 8px;
+    }
+
+    .algo-explainer-body {
+      font-size: 12px;
+      line-height: 1.65;
+      color: var(--text2);
+      padding-left: 8px;
+    }
+
+    .algo-explainer-body strong {
+      color: var(--text);
+    }
+
+    .algo-explainer-body .tag {
+      display: inline-block;
+      background: rgba(2, 132, 199, .1);
+      border: 1px solid rgba(2, 132, 199, .3);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--cyan);
+      padding: 1px 6px;
+      margin: 1px 2px;
+    }
+
+    /* ── STEP DISPLAY (current step big card) ── */
+    .step-current {
+      margin: 10px 16px 0;
+      flex-shrink: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      position: relative;
+      overflow: hidden;
+      min-height: 160px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+    }
+
+    .step-current::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+    }
+
+    .step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      margin-bottom: 7px;
+    }
+
+    .step-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
+    .step-explanation {
+      font-size: 13px;
+      line-height: 1.75;
+      color: var(--text2);
+    }
+
+    .step-explanation strong {
+      color: var(--cyan);
+    }
+
+    .step-explanation .highlight {
+      color: var(--yellow);
+      font-weight: 700;
+    }
+
+    .step-explanation .action {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .step-explanation .warning {
+      color: var(--orange);
+      font-weight: 600;
+    }
+
+    .step-explanation .why {
+      display: block;
+      margin-top: 8px;
+      padding: 7px 10px;
+      background: rgba(217, 119, 6, .07);
+      border-left: 2px solid var(--yellow);
+      border-radius: 0 6px 6px 0;
+      font-size: 12px;
+      color: var(--yellow);
+      font-style: italic;
+    }
+
+    /* ── STATE CARDS ── */
+    .state-cards {
+      display: flex;
+      gap: 6px;
+      margin: 8px 16px 0;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .state-card {
+      flex: 1;
+      min-width: 72px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .04);
+    }
+
+    .state-card .sc-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--cyan);
+    }
+
+    .state-card .sc-lbl {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    /* ── STEP LIST (history) ── */
+    .step-history {
+      flex: 1;
+      padding: 10px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-height: 80px;
+    }
+
+    .history-label {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text3);
+      margin-bottom: 4px;
+      letter-spacing: .05em;
+    }
+
+    .history-item {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border-left: 3px solid var(--border);
+      background: var(--bg);
+      font-size: 12px;
+      color: var(--text3);
+      transition: all .2s;
+    }
+
+    .history-item.done {
+      border-left-color: var(--cyan);
+      color: var(--text2);
+    }
+
+    .history-item .hi-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+    }
+
+    .history-item .hi-title {
+      font-weight: 700;
+      margin: 2px 0;
+      font-size: 12px;
+    }
+
+    .history-item .hi-brief {
+      font-size: 11px;
+      color: var(--text3);
+      line-height: 1.5;
+      margin-top: 3px;
+    }
+
+    .history-item.success {
+      border-left-color: var(--green);
+      background: rgba(22, 163, 74, .04);
+    }
+
+    .history-item.success .hi-title {
+      color: var(--green);
+    }
+
+    /* ── CONTROLS (fixed at bottom) ── */
+    .controls {
+      padding: 12px 16px;
+      border-top: 2px solid var(--border);
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+      background: var(--surface);
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, .06);
+    }
+
+    .btn {
+      flex: 1;
+      padding: 11px 8px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border2);
+      background: var(--card);
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+    }
+
+    .btn:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: #fff;
+    }
+
+    .btn.next {
+      background: var(--cyan);
+      color: #fff;
+      border-color: var(--cyan);
+      font-size: 14px;
+      flex: 1.4;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, .3);
+    }
+
+    .btn.next:hover {
+      background: #0369a1;
+      border-color: #0369a1;
+    }
+
+    .btn.next:disabled {
+      background: var(--border);
+      color: var(--text3);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn.back {
+      background: var(--card);
+      color: var(--text2);
+      border-color: var(--border2);
+    }
+
+    .btn.back:hover:not(:disabled) {
+      border-color: var(--purple);
+      color: var(--purple);
+      background: #fff;
+    }
+
+    .btn.back:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px 16px 0;
+      flex-shrink: 0;
+    }
+
+    .leg {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text2);
+    }
+
+    .leg-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .leg-sq {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ── WELCOME SCREEN ── */
+    .welcome {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .welcome h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--cyan);
+      margin-bottom: 12px;
+    }
+
+    .welcome p {
+      font-size: 15px;
+      color: var(--text2);
+      max-width: 480px;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <div class="nav-brand">🔍 AlgoViz</div>
+    <button class="tab active" data-tab="bfs">BFS</button>
+    <button class="tab" data-tab="dfs">DFS</button>
+    <button class="tab" data-tab="dfdb">DFDB</button>
+    <button class="tab" data-tab="greedy">Greedy Search</button>
+    <button class="tab" data-tab="astar">A* Search</button>
+    <button class="tab" data-tab="tsp">TSP (Delivery)</button>
+    <button class="tab" data-tab="puzzle">8-Puzzle</button>
+    <button class="tab" data-tab="decision">Decision Tree</button>
+
+    <a href="https://github.com" target="_blank" rel="noopener noreferrer" style="margin-left:auto;display:flex;align-items:center;white-space:nowrap;flex-shrink:0;">
+      <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="GitHub"
+        style="width:16px;height:16px;margin-right:6px;">
+      <span style="font-size:12px;color:var(--text2);">Made by Pranto Podder</span>
+    </a>
+  </nav>
+
+  <div class="layout">
+    <div class="vis-panel">
+      <div class="vis-header" id="visHeader">
+        <div class="scenario-tag" id="scenarioTag">Scenario</div>
+        <h2 id="visTitle">Select a topic above</h2>
+        <p id="visDesc"></p>
+      </div>
+      <canvas id="c"></canvas>
+    </div>
+
+    <div class="step-panel">
+      <div class="step-header">
+        <h3>📋 Step-by-Step Walkthrough</h3>
+      </div>
+
+      <div class="step-scroll">
+        <div class="algo-explainer" id="algoExplainer" style="display:none;">
+          <div class="algo-explainer-title" id="algoTitle"></div>
+          <div class="algo-explainer-body" id="algoBody"></div>
+        </div>
+
+        <div class="step-current" id="stepCurrent">
+          <div class="step-num">STEP 0</div>
+          <div class="step-title">Choose a topic tab</div>
+          <div class="step-explanation">Select any algorithm from the tabs above. Each one has a real-world scenario
+            with full step-by-step explanation so you can understand exactly what's happening and <em>why</em> each
+            decision is made.</div>
+        </div>
+
+        <div class="state-cards" id="stateCards"></div>
+
+        <div class="legend" id="legendArea"></div>
+
+        <div class="step-history" id="stepHistory"></div>
+      </div><!-- end step-scroll -->
+
+      <div class="controls">
+        <button class="btn" id="btnReset">↺ Restart</button>
+        <button class="btn back" id="btnBack" disabled>← Back</button>
+        <button class="btn next" id="btnNext">Next Step →</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ════════════════════════════════════════════════════════
+    // CANVAS SETUP
+    // ════════════════════════════════════════════════════════
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const p = canvas.parentElement;
+      const header = document.getElementById('visHeader');
+      canvas.width = p.clientWidth;
+      canvas.height = p.clientHeight - header.offsetHeight;
+    }
+    window.addEventListener('resize', () => { resizeCanvas(); if (currentAlgo) currentAlgo.draw(); });
+
+    // ════════════════════════════════════════════════════════
+    // GLOBAL STATE
+    // ════════════════════════════════════════════════════════
+    let currentAlgo = null;
+    let stepIndex = 0;
+    let steps = [];
+    let history = [];
+
+    // ════════════════════════════════════════════════════════
+    // UI HELPERS
+    // ════════════════════════════════════════════════════════
+    function setHeader(tag, title, desc) {
+      document.getElementById('scenarioTag').textContent = tag;
+      document.getElementById('visTitle').textContent = title;
+      document.getElementById('visDesc').textContent = desc;
+    }
+
+    function setAlgoExplainer(title, body) {
+      const el = document.getElementById('algoExplainer');
+      el.style.display = 'block';
+      document.getElementById('algoTitle').textContent = title;
+      document.getElementById('algoBody').innerHTML = body;
+    }
+
+    function showStep(s) {
+      const el = document.getElementById('stepCurrent');
+      const why = s.why ? `<span class="why">💡 Why? ${s.why}</span>` : '';
+      el.innerHTML = `
+    <div class="step-num">STEP ${s.index} of ${steps.length - 1}</div>
+    <div class="step-title">${s.title}</div>
+    <div class="step-explanation">${s.explain}${why}</div>
+  `;
+    }
+
+    function setStateCards(cards) {
+      const el = document.getElementById('stateCards');
+      el.innerHTML = cards.map(c => `<div class="state-card"><div class="sc-val">${c.val}</div><div class="sc-lbl">${c.lbl}</div></div>`).join('');
+    }
+
+    function setLegend(items) {
+      const el = document.getElementById('legendArea');
+      el.innerHTML = items.map(it => `<div class="leg"><div class="${it.sq ? 'leg-sq' : 'leg-dot'}" style="background:${it.color};border:1px solid ${it.border || it.color}"></div>${it.label}</div>`).join('');
+    }
+
+    function addHistory(s) {
+      const el = document.getElementById('stepHistory');
+      if (el.children.length === 0) {
+        const lbl = document.createElement('div');
+        lbl.className = 'history-label';
+        lbl.textContent = 'STEP HISTORY';
+        el.appendChild(lbl);
+      }
+      const d = document.createElement('div');
+      d.className = 'history-item done' + (s.success ? ' success' : '');
+      const brief = s.brief || '';
+      d.innerHTML = `<div class="hi-num">STEP ${s.index}</div><div class="hi-title">${s.title}</div>${brief ? `<div class="hi-brief">${brief}</div>` : ''}`;
+      el.appendChild(d);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function updateBtns(stepI, stepsLen) {
+      document.getElementById('btnNext').disabled = stepI >= stepsLen - 1;
+      document.getElementById('btnBack').disabled = stepI <= 0;
+    }
+
+    function clearHistory() {
+      document.getElementById('stepHistory').innerHTML = '';
+    }
+
+    function clr(hex, alpha) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    // ════════════════════════════════════════════════════════
+    // DRAWING PRIMITIVES
+    // ════════════════════════════════════════════════════════
+    function bg() {
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // subtle grid
+      ctx.strokeStyle = 'rgba(148,163,184,0.15)';
+      ctx.lineWidth = 1;
+      for (let x = 40; x < canvas.width; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+      for (let y = 40; y < canvas.height; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+    }
+
+    function circle(x, y, r, fill, stroke, lw = 2) {
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = fill; ctx.fill();
+      ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke();
+    }
+
+    function label(text, x, y, size, color, align = 'center', baseline = 'middle', bold = false) {
+      ctx.font = `${bold ? '700 ' : '400 '}${size}px 'Nunito', sans-serif`;
+      ctx.fillStyle = color;
+      ctx.textAlign = align; ctx.textBaseline = baseline;
+      ctx.fillText(text, x, y);
+    }
+
+    function monoLabel(text, x, y, size, color, align = 'center') {
+      ctx.font = `600 ${size}px 'JetBrains Mono', monospace`;
+      ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle';
+      ctx.fillText(text, x, y);
+    }
+
+    function line(x1, y1, x2, y2, color, lw = 2) {
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+      ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.stroke();
+    }
+
+    function arrow(x1, y1, x2, y2, color, lw = 2) {
+      line(x1, y1, x2, y2, color, lw);
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      const hs = 10;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - hs * Math.cos(angle - 0.4), y2 - hs * Math.sin(angle - 0.4));
+      ctx.lineTo(x2 - hs * Math.cos(angle + 0.4), y2 - hs * Math.sin(angle + 0.4));
+      ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+    }
+
+    function pill(text, x, y, color, bg) {
+      ctx.font = "600 12px 'JetBrains Mono', monospace";
+      const w = ctx.measureText(text).width + 16;
+      ctx.fillStyle = bg || clr(color, .15);
+      ctx.beginPath(); ctx.roundRect(x - w / 2, y - 11, w, 22, 11); ctx.fill();
+      ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(text, x, y);
+    }
+
+    function edgeLabel(text, x, y) {
+      pill(text, x, y, '#92400e', 'rgba(251,191,36,.25)');
+    }
+
+    function roundRect(x, y, w, h, r, fill, stroke, lw = 1.5) {
+      ctx.beginPath(); ctx.roundRect(x, y, w, h, r);
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
+    }
+
+    // ════════════════════════════════════════════════════════
+    // GRAPH NODE RENDERER
+    // ════════════════════════════════════════════════════════
+    function nodeColor(state) {
+      switch (state) {
+        case 'start': return { fill: '#dbeafe', border: '#2563eb' };
+        case 'goal': return { fill: '#dcfce7', border: '#16a34a' };
+        case 'current': return { fill: '#fed7aa', border: '#ea580c' };
+        case 'frontier': return { fill: '#d1fae5', border: '#059669' };
+        case 'visited': return { fill: '#e2e8f0', border: '#94a3b8' };
+        case 'path': return { fill: '#ede9fe', border: '#7c3aed' };
+        default: return { fill: '#f1f5f9', border: '#94a3b8' };
+      }
+    }
+
+    // Draw a node with optional heuristic label below
+    function drawNode(x, y, r, lbl, state, hLabel) {
+      const c = nodeColor(state);
+      // glow for current
+      if (state === 'current') {
+        ctx.beginPath(); ctx.arc(x, y, r + 8, 0, Math.PI * 2);
+        ctx.fillStyle = clr('#ea580c', .12); ctx.fill();
+      }
+      if (state === 'path') {
+        ctx.beginPath(); ctx.arc(x, y, r + 6, 0, Math.PI * 2);
+        ctx.fillStyle = clr('#7c3aed', .10); ctx.fill();
+      }
+      circle(x, y, r, c.fill, c.border, state === 'current' || state === 'path' ? 3 : 2);
+      ctx.font = `700 ${Math.max(11, r * .6)}px 'Syne', sans-serif`;
+      ctx.fillStyle = '#1e293b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(lbl, x, y);
+      if (hLabel) {
+        ctx.font = "500 11px 'JetBrains Mono', monospace";
+        ctx.fillStyle = '#b45309'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        ctx.fillText(hLabel, x, y + r + 4);
+      }
+    }
+
+    function drawEdgeLine(x1, y1, x2, y2, color, lw, wLabel) {
+      // shorten to not overlap nodes
+      const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy);
+      const nx = dx / d, ny = dy / d;
+      const pad = 22;
+      line(x1 + nx * pad, y1 + ny * pad, x2 - nx * pad, y2 - ny * pad, color, lw);
+      if (wLabel !== undefined) {
+        const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+        edgeLabel(String(wLabel), mx, my);
+      }
+    }
+
+    // ════════════════════════════════════════════════════════
+    // BFS — Rescue Mission (Complex 13-node graph)
+    // ════════════════════════════════════════════════════════
+    const BFS_ALGO = (() => {
+      const scenario = {
+        tag: '🚨 CITY RESCUE MISSION',
+        title: 'BFS — Breadth-First Search',
+        desc: 'A rescue team at Fire Station (S) must reach a trapped person (★) via city streets. BFS explores ALL locations at distance 1, then distance 2, then 3… guaranteeing the FEWEST STOPS — like ripples spreading from a stone dropped in water.'
+      };
+
+      const EXPLAINER_TITLE = 'What is BFS?';
+      const EXPLAINER_BODY = `
+    <strong>Breadth-First Search</strong> explores all neighbours at the current "depth" before going deeper.<br><br>
+    <span class="tag">Data structure: Queue (FIFO)</span><br>
+    <span class="tag">Optimal: YES (fewest edges)</span><br>
+    <span class="tag">Complete: YES</span><br><br>
+    <strong>Key idea:</strong> Think of dropping a stone in water — ripples spread outward evenly in all directions. BFS visits nodes in order of their distance from start.<br><br>
+    <strong>When to use it:</strong> Finding shortest path in an <em>unweighted</em> graph (all edges equal cost). Perfect for social networks, puzzle solving, routing.
+  `;
+
+      // 13-node city graph — shuffled, non-grid layout
+      const nodes = [
+        { id: 'S', label: '🚒', name: 'Fire Station', x: .08, y: .52 },
+        { id: 'A', label: 'A', name: 'Central Park', x: .22, y: .2 },
+        { id: 'B', label: 'B', name: 'Riverside', x: .22, y: .78 },
+        { id: 'C', label: 'C', name: 'Market St', x: .38, y: .08 },
+        { id: 'D', label: 'D', name: 'Old Town', x: .35, y: .38 },
+        { id: 'E', label: 'E', name: 'Southbank', x: .35, y: .68 },
+        { id: 'F', label: 'F', name: 'Northgate', x: .52, y: .18 },
+        { id: 'G', label: 'G', name: 'Crossroads', x: .52, y: .48 },
+        { id: 'H', label: 'H', name: 'Docklands', x: .52, y: .82 },
+        { id: 'I', label: 'I', name: 'Tech Quarter', x: .67, y: .12 },
+        { id: 'J', label: 'J', name: 'Business Dist', x: .67, y: .38 },
+        { id: 'K', label: 'K', name: 'Harbour', x: .67, y: .68 },
+        { id: '★', label: '★', name: 'Rescue Site', x: .87, y: .45 },
+      ];
+      const edges = [
+        { u: 'S', v: 'A' }, { u: 'S', v: 'B' }, { u: 'S', v: 'D' },
+        { u: 'A', v: 'C' }, { u: 'A', v: 'D' }, { u: 'A', v: 'F' },
+        { u: 'B', v: 'E' }, { u: 'B', v: 'H' },
+        { u: 'C', v: 'F' }, { u: 'D', v: 'G' }, { u: 'D', v: 'E' },
+        { u: 'E', v: 'H' }, { u: 'F', v: 'I' }, { u: 'F', v: 'J' },
+        { u: 'G', v: 'J' }, { u: 'G', v: 'K' }, { u: 'H', v: 'K' },
+        { u: 'I', v: '★' }, { u: 'J', v: '★' }, { u: 'K', v: '★' },
+      ];
+
+      let nodeStates = {};
+      let currentSteps = [];
+      let stepI = 0;
+
+      function buildSteps() {
+        const queue = ['S'];
+        const visited = new Set(['S']);
+        const parent = { S: null };
+        const allSteps = [];
+        const depth = { S: 0 };
+        const adj = {};
+        nodes.forEach(n => adj[n.id] = []);
+        edges.forEach(e => { adj[e.u].push(e.v); adj[e.v].push(e.u); });
+
+        allSteps.push({
+          title: '🚒 Rescue Team Deployed at Fire Station',
+          explain: `We start at <strong>Fire Station (S)</strong>. Our target is the <strong>★ Rescue Site</strong>.<br><br>BFS uses a <strong class="highlight">Queue</strong> — First In, First Out (like a queue at a shop). S goes in first.<br><br><span class="action">Queue = [S]</span><br><br>We will explore every street at distance 1 from S before moving to distance 2. This guarantees the fewest stops.`,
+          why: `BFS processes nodes layer by layer. Since all roads cost "1 stop", the first time we reach any node is always via the shortest route.`,
+          queue: ['S'], ns: { S: 'start', '★': 'goal' },
+          stats: [{ val: 'S', lbl: 'Start' }, { val: '★', lbl: 'Goal' }, { val: 0, lbl: 'Depth' }, { val: 13, lbl: 'Nodes' }],
+          brief: 'BFS initialized. Queue = [S]',
+        });
+
+        let bfsQ = ['S'], bfsVis = new Set(['S']), bfsPar = { S: null }, found = false;
+        while (bfsQ.length && !found) {
+          const node = bfsQ.shift();
+          const ns = {};
+          bfsVis.forEach(n => ns[n] = 'visited');
+          ns['S'] = 'start'; ns['★'] = 'goal';
+          ns[node] = 'current';
+          bfsQ.forEach(n => ns[n] = 'frontier');
+
+          const neighbors = adj[node] || [];
+          const added = [];
+          neighbors.forEach(nb => {
+            if (!bfsVis.has(nb)) {
+              bfsVis.add(nb); bfsQ.push(nb);
+              bfsPar[nb] = node; added.push(nb);
+              if (nb !== '★') ns[nb] = 'frontier';
+            }
+          });
+
+          const locName = nodes.find(n => n.id === node)?.name || node;
+          const addedNames = added.map(a => nodes.find(n => n.id === a)?.name || a);
+          const currentDepth = depth[node] || 0;
+          added.forEach(a => depth[a] = (currentDepth) + 1);
+
+          allSteps.push({
+            title: node === '★' ? '🎉 Found the Rescue Site!' : `👀 Exploring: ${locName} (${node}) — depth ${currentDepth}`,
+            explain: node === '★'
+              ? `We dequeued <strong>★ Rescue Site</strong> — we've arrived!<br><br><span class="action">BFS GUARANTEES this is the SHORTEST path</span> — fewest number of streets to cross.<br><br>Because BFS processes all depth-1 nodes before depth-2 nodes before depth-3 nodes, the <em>very first time</em> any node is reached is always via the shortest route. Now we trace back using parent pointers.`
+              : `We <strong>dequeue</strong> <strong>${locName} (${node})</strong> — it's at depth <strong>${currentDepth}</strong> from start.<br><br>We check all its streets (neighbours):<br>${added.length ? `<span class="action">New locations found: ${addedNames.join(', ')}</span><br>→ Added to back of queue.` : `<span class="warning">All neighbours already visited — nothing new added.</span>`}<br><br><strong>Queue now:</strong> [${[...bfsQ].slice(0, 6).join(', ') || 'empty'}${bfsQ.length > 6 ? '…' : ''}]<br><br><em>BFS explores all depth-${currentDepth} nodes before any depth-${currentDepth + 1} node — like ripples in water.</em>`,
+            why: node === '★' ? undefined : added.length ? `We add neighbours to the BACK of the queue. They'll be processed after all current-depth nodes — this is what makes BFS explore "layer by layer".` : `No new neighbours means this node is a "dead end" for expansion, but BFS continues with other nodes still in the queue.`,
+            queue: [...bfsQ],
+            ns: { ...ns },
+            stats: [{ val: bfsVis.size, lbl: 'Visited' }, { val: bfsQ.length, lbl: 'In Queue' }, { val: currentDepth, lbl: 'Depth' }, { val: added.length, lbl: 'Added' }],
+            brief: `Explored ${locName}. Added: ${added.join(', ') || 'none'}. Queue size: ${bfsQ.length}`,
+          });
+          if (node === '★') { found = true; break; }
+        }
+
+        if (found) {
+          const path = []; let n = '★';
+          while (n !== null) { path.unshift(n); n = bfsPar[n]; }
+          const pns = {};
+          nodes.forEach(nd => pns[nd.id] = 'visited');
+          path.forEach(nd => pns[nd] = 'path');
+          pns['S'] = 'start'; pns['★'] = 'goal';
+          const pathNames = path.map(p => nodes.find(n => n.id === p)?.name || p);
+
+          // Build parent pointer trace explanation
+          const parentTrace = [];
+          for (let i = path.length - 1; i > 0; i--) {
+            parentTrace.push(`${path[i]} ← parent is ${path[i - 1]}`);
+          }
+
+          allSteps.push({
+            title: `✅ Shortest Path: ${path.join(' → ')} (${path.length - 1} stops)`,
+            explain: `<strong>🔍 How was this path determined?</strong><br><br>During BFS, every time we first visit a node, we record its <strong>parent</strong> — the node we came from. This builds a "parent pointer" trail back to start.<br><br><strong>Parent pointers recorded:</strong><br>${parentTrace.map(t => `• <span class="action">${t}</span>`).join('<br>')}<br><br>To find the path, we <strong>trace backwards from ★</strong>:<br><span class="highlight">★ → ${path.slice().reverse().join(' → ')}</span><br><br>Then reverse it to get the forward path:<br><span class="action">${path.join(' → ')}</span><br><br><strong>Why is this the shortest?</strong> BFS first found ★ at depth ${path.length - 1}. Since BFS processes all depth-${path.length - 2} nodes before depth-${path.length - 1} nodes, no path with fewer steps could reach ★ — it would have been found first.`,
+            why: `BFS guarantees shortest path because it explores nodes in strict order of distance from start. The FIRST time ★ is reached = shortest possible route. Parent pointers are how we reconstruct which specific route that was.`,
+            queue: [], ns: pns, pathSet: new Set(path),
+            success: true,
+            stats: [{ val: path.length - 1, lbl: 'Min Stops' }, { val: path.join('→'), lbl: 'Route' }, { val: 'Yes ✓', lbl: 'Optimal' }],
+            brief: `SHORTEST PATH: ${path.join('→')} = ${path.length - 1} stops (via parent pointers)`,
+          });
+        }
+        return allSteps;
+      }
+
+      function draw(s) {
+        bg();
+        const W = canvas.width, H = canvas.height;
+        const R = Math.min(W, H) * 0.038;
+        const ns = s.ns || {};
+        const ps = s.pathSet || new Set();
+
+        edges.forEach(e => {
+          const u = nodes.find(n => n.id === e.u), v = nodes.find(n => n.id === e.v);
+          const ux = u.x * W, uy = u.y * H, vx = v.x * W, vy = v.y * H;
+          let col = '#94a3b8', lw = 1.5;
+          if (ps.has(e.u) && ps.has(e.v)) { col = '#7c3aed'; lw = 4; }
+          drawEdgeLine(ux, uy, vx, vy, col, lw);
+        });
+
+        nodes.forEach(n => {
+          const x = n.x * W, y = n.y * H;
+          const state = ns[n.id] || 'idle';
+          drawNode(x, y, R, n.label, state);
+          const isTop = n.y < 0.35;
+          label(n.name, x, y + (isTop ? -R - 13 : R + 13), 10, '#475569', 'center', 'middle');
+        });
+
+        if (s.queue && s.queue.length > 0) {
+          const qx = 14, qy = H - 58;
+          label('Queue (front→):', qx, qy, 12, '#475569', 'left', 'middle', true);
+          s.queue.slice(0, 9).forEach((id, i) => {
+            const bx = qx + 130 + i * 44, by = qy;
+            const isFront = i === 0;
+            roundRect(bx - 16, by - 13, 32, 26, 5, isFront ? 'rgba(3,105,161,.12)' : '#f1f5f9', isFront ? '#0369a1' : '#94a3b8', isFront ? 2 : 1.5);
+            ctx.font = `700 11px 'Syne',sans-serif`;
+            ctx.fillStyle = isFront ? '#0369a1' : '#475569'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(id, bx, by);
+            if (i === 0) { label('↑ next', bx, by + 18, 9, '#0369a1', 'center', 'middle'); }
+          });
+        }
+      }
+
+      function init() {
+        setHeader(scenario.tag, scenario.title, scenario.desc);
+        setAlgoExplainer(EXPLAINER_TITLE, EXPLAINER_BODY);
+        setLegend([
+          { color: '#60a5fa', label: 'Start (S)' },
+          { color: '#4ade80', label: 'Goal (★)' },
+          { color: '#fb923c', label: 'Currently dequeuing' },
+          { color: '#4ade80', border: '#4ade80', sq: true, label: 'In Queue (frontier)' },
+          { color: '#334155', label: 'Already visited' },
+          { color: '#c084fc', label: 'Shortest path found' },
+        ]);
+        currentSteps = buildSteps();
+        steps = currentSteps;
+        stepI = 0;
+        clearHistory();
+        const s = steps[0];
+        showStep({ ...s, index: 0 });
+        setStateCards(s.stats || []);
+        draw(s);
+        updateBtns(stepI, steps.length);
+      }
+
+      function nextStep() {
+        if (stepI >= steps.length - 1) return;
+        addHistory({ ...steps[stepI], index: stepI });
+        stepI++;
+        const s = steps[stepI];
+        showStep({ ...s, index: stepI });
+        setStateCards(s.stats || []);
+        draw(s);
+        updateBtns(stepI, steps.length);
+      }
+
+      function prevStep() {
+        if (stepI <= 0) return;
+        stepI--;
+        // Rebuild history display
+        const el = document.getElementById('stepHistory');
+        el.innerHTML = '';
+        for (let i = 0; i < stepI; i++) addHistory({ ...steps[i], index: i });
+        const s = steps[stepI];
+        showStep({ ...s, index: stepI });
+        setStateCards(s.stats || []);
+        draw(s);
+        updateBtns(stepI, steps.length);
+      }
+
+      return { init, nextStep, prevStep, draw: () => draw(steps[stepI] || steps[0]) };
+    })();
+
+    // ════════════════════════════════════════════════════════
+    // DFS — Maze Explorer (Complex 12-node graph)
+    // ════════════════════════════════════════════════════════
+    const DFS_ALGO = (() => {
+      const scenario = {
+        tag: '🧭 CAVE NETWORK EXPLORER',
+        title: 'DFS — Depth-First Search',
+        desc: 'An explorer starts at the cave entrance (S) and wants to find the treasure (★). DFS always dives as DEEP as possible down one path before backing up and trying another — like following a tunnel all the way until it dead-ends.'
+      };
+
+      const EXPLAINER_TITLE = 'What is DFS?';
+      const EXPLAINER_BODY = `
+    <strong>Depth-First Search</strong> explores as far as possible along each branch before backtracking.<br><br>
+    <span class="tag">Data structure: Stack (LIFO)</span><br>
+    <span class="tag">Optimal: NO</span><br>
+    <span class="tag">Complete: YES (finite graphs)</span><br><br>
+    <strong>Key idea:</strong> Like exploring a cave — pick one tunnel, go all the way to the end (or until stuck), then backtrack and try the next tunnel.<br><br>
+    <strong>When to use it:</strong> Detecting cycles, topological sorting, finding <em>any</em> path (not necessarily shortest), solving mazes, game tree search.
+  `;
+
+      const nodes = [
+        { id: 'S', label: '🧭', name: 'Entrance', x: .08, y: .52 },
+        { id: 'A', label: 'A', name: 'Upper Hall', x: .22, y: .2 },
+        { id: 'B', label: 'B', name: 'Lower Pass', x: .22, y: .78 },
+        { id: 'C', label: 'C', name: 'Crystal Cave', x: .38, y: .08 },
+        { id: 'D', label: 'D', name: 'Crossroads', x: .36, y: .36 },
+        { id: 'E', label: 'E', name: 'Dark Tunnel', x: .36, y: .66 },
+        { id: 'F', label: 'F', name: 'Echo Chamber', x: .36, y: .88 },
+        { id: 'G', label: 'G', name: 'Narrow Pass', x: .54, y: .18 },
+        { id: 'H', label: 'H', name: 'Underground Lake', x: .54, y: .46 },
+        { id: 'I', label: 'I', name: 'Lava Pit', x: .54, y: .74 },
+        { id: 'J', label: 'J', name: 'Deep Shaft', x: .70, y: .28 },
+        { id: 'K', label: 'K', name: 'Hidden Room', x: .70, y: .60 },
+        { id: '★', label: '★', name: 'Treasure', x: .88, y: .44 },
+      ];
+      const edges = [
+        { u: 'S', v: 'A' }, { u: 'S', v: 'B' }, { u: 'S', v: 'D' },
+        { u: 'A', v: 'C' }, { u: 'A', v: 'D' }, { u: 'A', v: 'G' },
+        { u: 'B', v: 'E' }, { u: 'B', v: 'F' },
+        { u: 'C', v: 'G' }, { u: 'D', v: 'H' }, { u: 'E', v: 'H' }, { u: 'E', v: 'I' },
+        { u: 'F', v: 'I' }, { u: 'G', v: 'J' }, { u: 'H', v: 'J' }, { u: 'H', v: 'K' },
+        { u: 'I', v: 'K' }, { u: 'J', v: '★' }, { u: 'K', v: '★' },
+      ];
+
+      let steps = [], stepI = 0;
+
+      function buildSteps() {
+        const adj = {};
+        nodes.forEach(n => adj[n.id] = []);
+        edges.forEach(e => { adj[e.u].push(e.v); adj[e.v].push(e.u); });
+        const allSteps = [];
+        const visited = new Set();
+        const stack = ['S'];
+        const parent = { S: null };
+
+        allSteps.push({
+          title: '🧭 Enter the Cave Network at S',
+          explain: `We start at the <strong>Entrance (S)</strong>.<br><br>DFS uses a <strong class="highlight">Stack</strong> — Last In, First Out (like a pile of plates). Push S onto the stack.<br><br><span class="action">Stack = [S]</span><br><br>DFS will always explore the <strong>most recently pushed</strong> path first — diving as deep as possible before backtracking. This is the opposite of BFS's layer-by-layer approach.`,
+          why: `A stack (LIFO) is the key difference from BFS (queue). The top of the stack is always where we go next — pulling us deeper and deeper down one branch.`,
+          ns: { S: 'start', '★': 'goal' }, stackViz: ['S'],
+          stats: [{ val: 'S', lbl: 'Start' }, { val: '★', lbl: 'Goal' }, { val: 12, lbl: 'Nodes' }, { val: 'Stack', lbl: 'Structure' }],
+          brief: 'DFS initialized. Stack = [S]',
+        });
+
+        let found = false;
+        const depthOf = { S: 0 };
+        while (stack.length && !found) {
+          const node = stack.pop();
+          if (visited.has(node)) continue;
+          visited.add(node);
+          const ns = {};
+          visited.forEach(n => ns[n] = 'visited');
+          ns['S'] = 'start'; ns['★'] = 'goal';
+          ns[node] = 'current';
+          stack.forEach(n => { if (!visited.has(n)) ns[n] = 'frontier'; });
+          const locName = nodes.find(n => n.id === node)?.name || node;
+          const neighbors = [...adj[node] || []].reverse();
+          const added = [];
+          neighbors.forEach(nb => {
+            if (!visited.has(nb)) {
+              stack.push(nb);
+              if (parent[nb] === undefined) parent[nb] = node;
+              depthOf[nb] = (depthOf[node] || 0) + 1;
+              added.push(nb);
+            }
+          });
+          allSteps.push({
+            title: node === '★' ? '💰 Found the Treasure!' : added.length === 0 ? `⬅️ Backtrack! Dead-end at ${locName}` : `🔦 Exploring ${locName} (${node}) — depth ${depthOf[node] || 0}`,
+            explain: node === '★'
+              ? `We popped <strong>★ Treasure</strong> from the stack!<br><br><span class="warning">Important: DFS does NOT guarantee the shortest path.</span><br><br>It found <em>a</em> path by going as deep as possible. A shorter route may exist that DFS walked past.<br><br><strong>Compare:</strong> BFS would guarantee the shortest path. DFS is better when you just need to find <em>any</em> solution quickly.`
+              : added.length === 0
+                ? `We popped <strong>${locName} (${node})</strong> from the stack — but all its neighbours are already visited!<br><br><span class="warning">Dead end! We backtrack automatically.</span><br><br>DFS simply pops the next item off the stack — which was pushed earlier. This is the "backtracking" in action.<br><br><em>Stack now:</em> [${[...stack].slice(-4).join(', ') || 'empty'}]`
+                : `We pop <strong>${locName} (${node})</strong> from the top of the stack (depth ${depthOf[node] || 0}).<br><br>Its unvisited neighbours are pushed onto the stack:<br><span class="action">Pushed: ${added.join(', ')}</span><br><br>The <strong>top of the stack (${added[added.length - 1]})</strong> will be explored NEXT — diving deeper.<br><br><em>Stack top → next:</em> [${[...stack].slice(-4).join(', ') || 'empty'}]`,
+            why: node === '★' ? undefined : added.length === 0 ? `Dead ends are automatically handled! DFS just takes the next item from the stack, which was a node left over from an earlier branch. No special "undo" needed.` : `We push ${added.join(', ')} in reverse order so the first logical neighbour ends up on top of the stack and gets explored first.`,
+            ns: { ...ns }, stackViz: [...stack].slice(-10),
+            stats: [{ val: visited.size, lbl: 'Visited' }, { val: stack.length, lbl: 'In Stack' }, { val: depthOf[node] || 0, lbl: 'Depth' }, { val: added.length, lbl: 'Pushed' }],
+            brief: `At ${locName}. Pushed: ${added.join(',') || 'none (dead end)'}`,
+          });
+          if (node === '★') { found = true; break; }
+        }
+        if (found) {
+          const path = []; let n = '★'; while (n !== null) { path.unshift(n); n = parent[n]; }
+          const pns = {}; nodes.forEach(nd => pns[nd.id] = 'visited');
+          path.forEach(nd => pns[nd] = 'path'); pns['S'] = 'start'; pns['★'] = 'goal';
+          allSteps.push({
+            title: `⚠️ Path Found (${path.length - 1} stops) — but not guaranteed shortest!`,
+            explain: `<strong>DFS path:</strong> <span class="action">${path.join(' → ')}</span><br><br><span class="highlight">Stops: ${path.length - 1}</span><br><br><span class="warning">This is NOT guaranteed to be the shortest route.</span> DFS found the first path it stumbled upon by diving deep.<br><br><strong>Why?</strong> DFS commits to exploring deep branches early. If the goal is near the surface of a different branch, DFS might take the long way around before finding it.<br><br><em>Use BFS if shortest path matters. Use DFS if you just need to find any path, or need to explore all possibilities.</em>`,
+            why: `DFS found a path, but since it went deep before exploring shallow branches, a shorter path may have existed through a different branch it explored later.`,
+            ns: pns, pathSet: new Set(path), stackViz: [],
+            stats: [{ val: path.length - 1, lbl: 'Stops' }, { val: 'No', lbl: 'Optimal?' }, { val: 'Yes*', lbl: 'Found?' }],
+            brief: `Path: ${path.join('→')} — NOT guaranteed optimal!`,
+          });
+        }
+        return allSteps;
+      }
+
+      function draw(s) {
+        bg();
+        const W = canvas.width, H = canvas.height;
+        const R = Math.min(W, H) * 0.038;
+        const ns = s.ns || {};
+        const ps = s.pathSet || new Set();
+        edges.forEach(e => {
+          const u = nodes.find(n => n.id === e.u), v = nodes.find(n => n.id === e.v);
+          let col = '#94a3b8', lw = 1.5;
+          if (ps.has(e.u) && ps.has(e.v)) { col = '#7c3aed'; lw = 4; }
+          drawEdgeLine(u.x * W, u.y * H, v.x * W, v.y * H, col, lw);
+        });
+        nodes.forEach(n => {
+          drawNode(n.x * W, n.y * H, R, n.label, ns[n.id] || 'idle');
+          label(n.name, n.x * W, n.y * H + (n.y < 0.3 ? -R - 13 : R + 13), 10, '#475569');
+        });
+        if (s.stackViz && s.stackViz.length > 0) {
+          const qy = H - 58;
+          label('Stack (top→)', 14, qy, 12, '#475569', 'left', 'middle', true);
+          [...s.stackViz].reverse().slice(0, 9).forEach((id, i) => {
+            const bx = 14 + 105 + i * 44;
+            const isTop = i === 0;
+            roundRect(bx - 16, qy - 13, 32, 26, 5, isTop ? 'rgba(251,146,60,.15)' : '#f1f5f9', isTop ? '#fb923c' : '#94a3b8', isTop ? 2 : 1.5);
+            ctx.font = "700 11px 'Syne',sans-serif";
+            ctx.fillStyle = isTop ? '#fb923c' : '#475569'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(id, bx, qy);
+            if (i === 0) label('↑ top', bx, qy + 18, 9, '#fb923c');
+          });
+        }
+      }
+
+      function init() {
+        setHeader(scenario.tag, scenario.title, scenario.desc);
+        setAlgoExplainer(EXPLAINER_TITLE, EXPLAINER_BODY);
+        setLegend([{ color: '#60a5fa', label: 'Start' }, { color: '#4ade80', label: 'Goal' }, { color: '#fb923c', label: 'Currently at (top of stack)' }, { color: '#334155', label: 'Already visited' }, { color: '#c084fc', label: 'Path found (may not be shortest)' }]);
+        steps = buildSteps(); stepI = 0; clearHistory();
+        showStep({ ...steps[0], index: 0 }); setStateCards(steps[0].stats || []); draw(steps[0]);
+        updateBtns(stepI, steps.length);
+      }
+      function nextStep() {
+        if (stepI >= steps.length - 1) return;
+        addHistory({ ...steps[stepI], index: stepI }); stepI++;
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); draw(s);
+        updateBtns(stepI, steps.length);
+      }
+      function prevStep() {
+        if (stepI <= 0) return; stepI--;
+        const el = document.getElementById('stepHistory'); el.innerHTML = '';
+        for (let i = 0; i < stepI; i++) addHistory({ ...steps[i], index: i });
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); draw(s);
+        updateBtns(stepI, steps.length);
+      }
+      return { init, nextStep, prevStep, draw: () => draw(steps[stepI] || steps[0]) };
+    })();
+
+    // ════════════════════════════════════════════════════════
+    // DFDB — Depth-Bounded (expanded graph + explainer)
+    // ════════════════════════════════════════════════════════
+    const DFDB_ALGO = (() => {
+      const scenario = {
+        tag: '🏢 BUILDING SEARCH',
+        title: 'DFDB — Depth-Limited Search',
+        desc: 'Security is searching for a lost child in a multi-wing building. They restrict the search to floors 1–3 (depth limit = 3) to avoid searching the whole building unnecessarily. Nodes deeper than the limit get PRUNED.'
+      };
+      const EXPLAINER_TITLE = 'What is Depth-Limited Search?';
+      const EXPLAINER_BODY = `
+    <strong>Depth-Limited Search</strong> is DFS with a maximum depth cutoff — preventing it from going too deep.<br><br>
+    <span class="tag">Data structure: Stack (LIFO)</span><br>
+    <span class="tag">Optimal: NO</span><br>
+    <span class="tag">Complete: Only if goal within depth limit</span><br><br>
+    <strong>Key idea:</strong> We know the goal is "nearby" — so we cap how deep we search. Anything beyond depth L is <em>pruned</em> (ignored).<br><br>
+    <strong>When to use it:</strong> When you have prior knowledge about max solution depth (e.g., the child can't be more than 3 floors from security). Also the basis for Iterative Deepening DFS (IDDFS).
+  `;
+      const nodes = [
+        { id: 'S', label: '🏢', name: 'Reception', x: .08, y: .50 },
+        { id: 'W1A', label: 'W1A', name: 'Wing 1A', x: .22, y: .22 },
+        { id: 'W1B', label: 'W1B', name: 'Wing 1B', x: .22, y: .78 },
+        { id: 'W2A', label: 'W2A', name: 'Wing 2A', x: .38, y: .10 },
+        { id: 'W2B', label: 'W2B', name: 'Wing 2B', x: .38, y: .40 },
+        { id: 'W2C', label: 'W2C', name: 'Wing 2C', x: .38, y: .72 },
+        { id: 'W3A', label: 'W3A', name: '3rd Floor A', x: .55, y: .18 },
+        { id: 'W3B', label: 'W3B', name: '3rd Floor B', x: .55, y: .44 },
+        { id: 'W3C', label: 'W3C', name: '3rd Floor C', x: .55, y: .72 },
+        { id: 'W4A', label: 'W4A', name: '4th Floor A', x: .72, y: .28 },
+        { id: 'W4B', label: 'W4B', name: '4th Floor B', x: .72, y: .60 },
+        { id: '★', label: '★', name: 'Child Found!', x: .88, y: .44 },
+      ];
+      const edges = [
+        { u: 'S', v: 'W1A' }, { u: 'S', v: 'W1B' },
+        { u: 'W1A', v: 'W2A' }, { u: 'W1A', v: 'W2B' },
+        { u: 'W1B', v: 'W2B' }, { u: 'W1B', v: 'W2C' },
+        { u: 'W2A', v: 'W3A' }, { u: 'W2B', v: 'W3A' }, { u: 'W2B', v: 'W3B' },
+        { u: 'W2C', v: 'W3C' },
+        { u: 'W3A', v: 'W4A' }, { u: 'W3B', v: 'W4B' }, { u: 'W3B', v: '★' }, { u: 'W3C', v: '★' },
+        { u: 'W4A', v: '★' }, { u: 'W4B', v: '★' },
+      ];
+      const LIMIT = 3;
+      let steps = [], stepI = 0;
+
+      function buildSteps() {
+        const adj = {};
+        nodes.forEach(n => adj[n.id] = []);
+        edges.forEach(e => { adj[e.u].push(e.v); adj[e.v].push(e.u); });
+        const allSteps = [];
+        allSteps.push({
+          title: `🏢 Start Search at Reception (depth limit = ${LIMIT})`,
+          explain: `We start at <strong>Reception (S)</strong>. Security believes the child is within <strong class="highlight">${LIMIT} floors</strong> of the entrance.<br><br>DFDB runs like DFS but with a hard cutoff — any node at depth > ${LIMIT} is <strong>pruned</strong> without exploring.<br><br><span class="action">Stack = [S (depth 0)]</span><br><br>The <span class="warning">red dashed line</span> on the graph marks the depth limit boundary.`,
+          why: `If we know the goal is nearby, cutting off deep branches saves huge amounts of time — especially in large buildings or graphs.`,
+          ns: { S: 'start', '★': 'goal' }, limitLine: LIMIT,
+          stats: [{ val: LIMIT, lbl: 'Depth Limit' }, { val: 0, lbl: 'Expanded' }, { val: 0, lbl: 'Pruned' }],
+          brief: `DFDB started. Limit = ${LIMIT}. Stack = [S]`,
+        });
+        const stack = [{ id: 'S', d: 0 }], visited = new Set(), parent = { S: null };
+        let expanded = 0, pruned = 0, found = false;
+        while (stack.length && !found) {
+          const { id: node, d } = stack.pop();
+          if (visited.has(node)) continue;
+          visited.add(node); expanded++;
+          const ns = {}; visited.forEach(n => ns[n] = 'visited');
+          ns['S'] = 'start'; ns['★'] = 'goal'; ns[node] = 'current';
+          stack.forEach(({ id }) => { if (!visited.has(id)) ns[id] = 'frontier'; });
+          const locName = nodes.find(n => n.id === node)?.name || node;
+          const neighbors = adj[node] || [];
+          const added = [], prunedHere = [];
+          if (d < LIMIT) {
+            neighbors.forEach(nb => {
+              if (!visited.has(nb)) { stack.push({ id: nb, d: d + 1 }); parent[nb] = parent[nb] === undefined ? node : parent[nb]; added.push(nb); }
+            });
+          } else {
+            neighbors.forEach(nb => { if (!visited.has(nb)) { pruned++; prunedHere.push(nb); } });
+          }
+          allSteps.push({
+            title: node === '★' ? '🎉 Child Found!' : d >= LIMIT ? `⛔ Depth Limit (${LIMIT}) Hit at ${locName}` : `🔍 Checking ${locName} — floor ${d}/${LIMIT}`,
+            explain: node === '★'
+              ? `The <strong>★ Child was found</strong> at depth ${d} — within the limit of ${LIMIT}!<br><br><span class="action">Depth-Limited Search succeeded.</span> We didn't need to search the whole building.<br><br>Total rooms expanded: <strong>${expanded}</strong>. Total pruned: <strong>${pruned}</strong>.`
+              : d >= LIMIT
+                ? `We reached <strong>${locName}</strong> at depth <strong>${d}</strong> — exactly at our limit!<br><br><span class="warning">⛔ PRUNING: We do NOT go deeper from here.</span><br><br>Neighbours <span class="action">${prunedHere.join(', ') || 'none'}</span> are skipped — they'd be at depth ${d + 1} which exceeds our limit.<br><br><em>Pruning saves us from exploring ${prunedHere.length} extra node(s) — and potentially many more below them.</em>`
+                : `We pop <strong>${locName}</strong> (depth <strong>${d}/${LIMIT}</strong>) from the stack.<br><br>${added.length ? `Found unvisited rooms: <span class="action">${added.join(', ')}</span> — pushed to stack at depth ${d + 1}.` : '<span class="warning">All neighbours already visited.</span>'}<br><br>Still searching with ${stack.length} location(s) in stack. Total pruned so far: <strong>${pruned}</strong>.`,
+            why: d >= LIMIT ? `This is the whole point of DFDB! We trade completeness (might miss goals deeper than limit) for speed (don't waste time in deep irrelevant branches).` : undefined,
+            ns: { ...ns }, limitLine: LIMIT,
+            stats: [{ val: LIMIT, lbl: 'Depth Limit' }, { val: expanded, lbl: 'Expanded' }, { val: pruned, lbl: 'Pruned' }],
+            brief: `${locName} (depth ${d}). ${d >= LIMIT ? `PRUNED ${prunedHere.join(',') || 'nothing'}` : added.length ? `Pushed: ${added.join(',')}` : ' Dead end'}`,
+          });
+          if (node === '★') { found = true; break; }
+        }
+        if (found) {
+          const path = []; let n = '★'; while (n !== null) { path.unshift(n); n = parent[n]; }
+          const pns = {}; nodes.forEach(nd => pns[nd.id] = 'visited');
+          path.forEach(nd => pns[nd] = 'path'); pns['S'] = 'start'; pns['★'] = 'goal';
+          allSteps.push({
+            title: '✅ DFDB Complete',
+            explain: `<strong>Path:</strong> <span class="action">${path.join(' → ')}</span><br><br>Found the child by searching only within <strong>${LIMIT} floors</strong>.<br><br><span class="highlight">Rooms pruned: ${pruned}</span> — we skipped those entirely!<br><br><em>DFDB is a smart trade-off: it's fast when the goal is shallow, but it will MISS the goal if it's deeper than the limit. This is why Iterative Deepening DFS (IDDFS) increases the limit gradually until found.</em>`,
+            why: `The pruned count shows how much work we saved. A regular DFS would have expanded all those nodes unnecessarily.`,
+            ns: pns, pathSet: new Set(path),
+            stats: [{ val: LIMIT, lbl: 'Depth Limit' }, { val: expanded, lbl: 'Expanded' }, { val: pruned, lbl: 'Pruned' }],
+            brief: `Solution: ${path.join('→')} (${path.length - 1} steps)`,
+          });
+        }
+        return allSteps;
+      }
+
+      function draw(s) {
+        bg();
+        const W = canvas.width, H = canvas.height, R = Math.min(W, H) * 0.038;
+        const ns = s.ns || {}, ps = s.pathSet || new Set();
+        edges.forEach(e => {
+          const u = nodes.find(n => n.id === e.u), v = nodes.find(n => n.id === e.v);
+          let col = '#94a3b8', lw = 1.5;
+          if (ps.has(e.u) && ps.has(e.v)) { col = '#7c3aed'; lw = 4; }
+          drawEdgeLine(u.x * W, u.y * H, v.x * W, v.y * H, col, lw);
+        });
+        // depth limit indicator line at ~depth 3
+        const limitX = 0.63 * W;
+        ctx.beginPath(); ctx.setLineDash([6, 4]); ctx.moveTo(limitX, 20); ctx.lineTo(limitX, H - 20);
+        ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
+        label(`⛔ Depth Limit (${LIMIT})`, limitX + 6, 28, 11, '#f87171', 'left', 'middle', true);
+        nodes.forEach(n => {
+          drawNode(n.x * W, n.y * H, R, n.label, ns[n.id] || 'idle');
+          label(n.name, n.x * W, n.y * H + (n.y < 0.25 ? -R - 13 : R + 13), 10, '#475569');
+        });
+      }
+
+      function init() {
+        setHeader(scenario.tag, scenario.title, scenario.desc);
+        setAlgoExplainer(EXPLAINER_TITLE, EXPLAINER_BODY);
+        setLegend([{ color: '#60a5fa', label: 'Start' }, { color: '#4ade80', label: 'Goal' }, { color: '#fb923c', label: 'Currently checking' }, { color: '#f87171', label: 'Depth limit line (pruned beyond here)' }, { color: '#334155', label: 'Visited' }, { color: '#c084fc', label: 'Solution path' }]);
+        steps = buildSteps(); stepI = 0; clearHistory();
+        showStep({ ...steps[0], index: 0 }); setStateCards(steps[0].stats || []); draw(steps[0]);
+        updateBtns(stepI, steps.length);
+      }
+      function nextStep() {
+        if (stepI >= steps.length - 1) return;
+        addHistory({ ...steps[stepI], index: stepI }); stepI++;
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); draw(s);
+        updateBtns(stepI, steps.length);
+      }
+      function prevStep() {
+        if (stepI <= 0) return; stepI--;
+        const el = document.getElementById('stepHistory'); el.innerHTML = '';
+        for (let i = 0; i < stepI; i++) addHistory({ ...steps[i], index: i });
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); draw(s);
+        updateBtns(stepI, steps.length);
+      }
+      return { init, nextStep, prevStep, draw: () => draw(steps[stepI] || steps[0]) };
+    })();
+
+    // ════════════════════════════════════════════════════════
+    // GREEDY SEARCH — Hospital Navigation (Expanded Graph)
+    // ════════════════════════════════════════════════════════
+    const GREEDY_ALGO = (() => {
+      const scenario = {
+        tag: '🏥 HOSPITAL EMERGENCY',
+        title: 'Greedy Best-First Search',
+        desc: 'An ambulance at Station S must reach Hospital ★ ASAP. Greedy search always jumps to the neighbour that LOOKS closest to the goal (lowest h = heuristic estimate). It\'s fast but can take a wrong shortcut!'
+      };
+      const EXPLAINER_TITLE = 'What is Greedy Best-First Search?';
+      const EXPLAINER_BODY = `
+    <strong>Greedy Search</strong> always picks the node that <em>looks</em> closest to the goal, using a heuristic estimate h(n).<br><br>
+    <span class="tag">Strategy: Minimize h(n)</span><br>
+    <span class="tag">Optimal: NO — can get fooled</span><br>
+    <span class="tag">Complete: NO (can loop without visited check)</span><br><br>
+    <strong>Key idea:</strong> At each step, greedily go toward where the goal <em>appears</em> to be — ignoring how far you've already traveled.<br><br>
+    <strong>Danger:</strong> h(n) is just an <em>estimate</em>. A road that looks short on the map might be long in actual travel time. Greedy gets fooled by misleading heuristics. <strong>A*</strong> fixes this.
+  `;
+      // Expanded 11-node graph with more misleading paths
+      const nodes = [
+        { id: 'S', label: '🚑', name: 'Ambulance Base', x: .08, y: .52, h: 14 },
+        { id: 'A', label: 'A', name: 'North District', x: .22, y: .20, h: 10 },
+        { id: 'B', label: 'B', name: 'South District', x: .22, y: .78, h: 11 },
+        { id: 'C', label: 'C', name: 'Hilltop', x: .36, y: .08, h: 7 },
+        { id: 'D', label: 'D', name: 'Town Centre', x: .36, y: .40, h: 8 },
+        { id: 'E', label: 'E', name: 'Industrial', x: .36, y: .72, h: 12 },
+        { id: 'F', label: 'F', name: 'Motorway', x: .52, y: .18, h: 5 },
+        { id: 'G', label: 'G', name: 'Shortcut Lane', x: .52, y: .52, h: 4 },
+        { id: 'H', label: 'H', name: 'Southport', x: .52, y: .80, h: 9 },
+        { id: 'I', label: 'I', name: 'Bypass North', x: .70, y: .28, h: 3 },
+        { id: 'J', label: 'J', name: 'City Ring', x: .70, y: .60, h: 2 },
+        { id: '★', label: '★', name: 'Hospital', x: .88, y: .44, h: 0 },
+      ];
+      const edges = [
+        { u: 'S', v: 'A', w: 3 }, { u: 'S', v: 'B', w: 4 }, { u: 'S', v: 'D', w: 6 },
+        { u: 'A', v: 'C', w: 2 }, { u: 'A', v: 'D', w: 5 },
+        { u: 'B', v: 'E', w: 3 }, { u: 'B', v: 'H', w: 7 },
+        { u: 'C', v: 'F', w: 4 }, { u: 'D', v: 'F', w: 3 }, { u: 'D', v: 'G', w: 5 },
+        { u: 'E', v: 'H', w: 4 }, { u: 'F', v: 'I', w: 3 }, { u: 'G', v: 'I', w: 6 },
+        { u: 'G', v: 'J', w: 3 }, { u: 'H', v: 'J', w: 8 },
+        { u: 'I', v: '★', w: 4 }, { u: 'J', v: '★', w: 2 },
+      ];
+      let steps = [], stepI = 0;
+
+      function buildSteps() {
+        const adj = {};
+        nodes.forEach(n => adj[n.id] = []);
+        edges.forEach(e => { adj[e.u].push({ to: e.v, w: e.w }); adj[e.v].push({ to: e.u, w: e.w }); });
+        const getH = id => nodes.find(n => n.id === id)?.h ?? 99;
+        const allSteps = [];
+        allSteps.push({
+          title: '🚑 Ambulance at Base Station — Emergency!',
+          explain: `We start at <strong>Ambulance Base (S)</strong>. Target: <strong>★ Hospital</strong>.<br><br>Greedy Search uses <strong class="highlight">h(n)</strong> = estimated straight-line distance to the hospital (gold labels on each node).<br><br><span class="action">Rule: Always move to the unvisited neighbour with the LOWEST h value.</span><br><br>Each node's h is shown in gold. Lower h = looks closer to hospital. But look carefully — some "nearby looking" nodes have expensive roads!`,
+          why: `h(n) is just an estimate (like "as the crow flies"). Greedy trusts it completely, which can lead to suboptimal paths.`,
+          ns: { S: 'start', '★': 'goal' }, open: [{ id: 'S', h: getH('S') }], showH: true,
+          stats: [{ val: 'h(n)', lbl: 'Strategy' }, { val: 11, lbl: 'Nodes' }, { val: '—', lbl: 'Cost' }],
+          brief: `Greedy started at S (h=${getH('S')}). Always pick lowest h.`,
+        });
+        const open = [{ id: 'S', h: getH('S') }];
+        const visited = new Set(), parent = { S: null };
+        let expanded = 0, found = false;
+        while (open.length && !found) {
+          open.sort((a, b) => a.h - b.h);
+          const { id: node, h } = open.shift();
+          if (visited.has(node)) continue;
+          visited.add(node); expanded++;
+          const ns = {}; visited.forEach(n => ns[n] = 'visited');
+          ns['S'] = 'start'; ns['★'] = 'goal'; ns[node] = 'current';
+          open.forEach(x => { if (!visited.has(x.id)) ns[x.id] = 'frontier'; });
+          const locName = nodes.find(n => n.id === node)?.name || node;
+          const neighbors = adj[node] || [];
+          const added = [];
+          neighbors.forEach(({ to }) => {
+            if (!visited.has(to) && !open.find(x => x.id === to)) {
+              const hn = getH(to); open.push({ id: to, h: hn }); parent[to] = node; added.push({ id: to, h: hn });
+            }
+          });
+          const sortedOpen = [...open].sort((a, b) => a.h - b.h);
+          allSteps.push({
+            title: node === '★' ? '🏥 Reached the Hospital!' : `Greedy picks ${locName} — h=${h} (lowest)`,
+            explain: node === '★'
+              ? `We reached <strong>★ Hospital</strong>!<br><br><span class="warning">⚠️ But Greedy does NOT guarantee the shortest path.</span><br><br>It always chose the place that <em>looked</em> closest by h value. But h is just a straight-line estimate — not actual road cost. A longer-looking route might be faster in reality.<br><br><em>Compare with A*: A* uses <strong>f = g + h</strong> (actual cost + estimate) to guarantee the optimal answer.</em>`
+              : `We expand <strong>${locName}</strong> (h=<span class="highlight">${h}</span>) — it had the lowest h in the open list.<br><br>New neighbours added:<br>${added.map(a => `<span class="action">${a.id}</span>(h=${a.h})`).join(', ') || '<span class="warning">none new</span>'}<br><br><strong>Open list (pick lowest h next):</strong><br>${sortedOpen.slice(0, 4).map(x => `${x.id}(h=${x.h})`).join(' → ')}<br><br><span class="highlight">→ Next move: ${sortedOpen[0]?.id || 'done'} with h=${sortedOpen[0]?.h ?? '—'}</span>`,
+            why: node === '★' ? undefined : `Greedy commits to ${locName} because h=${h} is lowest — but it doesn't check whether the actual road cost to get here was cheap. This is its fundamental flaw.`,
+            ns: { ...ns }, open: [...open], showH: true,
+            stats: [{ val: h, lbl: 'Current h' }, { val: expanded, lbl: 'Expanded' }, { val: open.length, lbl: 'Open List' }],
+            brief: `At ${locName} (h=${h}). Added: ${added.map(a => a.id).join(',') || 'none'}`,
+          });
+          if (node === '★') { found = true; break; }
+        }
+        if (found) {
+          const path = []; let n = '★'; while (n !== null) { path.unshift(n); n = parent[n]; }
+          const pns = {}; nodes.forEach(nd => pns[nd.id] = 'visited');
+          path.forEach(nd => pns[nd] = 'path'); pns['S'] = 'start'; pns['★'] = 'goal';
+          allSteps.push({
+            title: '⚠️ Greedy Path Found — but optimal?',
+            explain: `<strong>Greedy path:</strong> <span class="action">${path.join(' → ')}</span><br><br><strong>Stops: ${path.length - 1}</strong><br><br><span class="warning">This may NOT be the cheapest or fastest route.</span> Greedy only used h(n) estimates, ignoring actual edge weights (g).<br><br>A path with higher-looking h values might have cheaper roads and end up shorter overall.<br><br><em>The fix: <strong>A* Search</strong> uses f(n) = g(n) + h(n) to guarantee the optimal path.</em>`,
+            why: `Greedy found this path greedily, always following the "looks nearest" rule. Without tracking actual costs, it cannot prove it found the best route.`,
+            ns: pns, pathSet: new Set(path), showH: true,
+            stats: [{ val: path.length - 1, lbl: 'Stops' }, { val: '❌ No', lbl: 'Optimal?' }, { val: 'Fast ✓', lbl: 'Speed' }],
+            brief: `Greedy path: ${path.join('→')} — not guaranteed optimal!`,
+          });
+        }
+        return allSteps;
+      }
+
+      function draw(s) {
+        bg();
+        const W = canvas.width, H = canvas.height, R = Math.min(W, H) * 0.038;
+        const ns = s.ns || {}, ps = s.pathSet || new Set();
+        edges.forEach(e => {
+          const u = nodes.find(n => n.id === e.u), v = nodes.find(n => n.id === e.v);
+          let col = '#94a3b8', lw = 1.5;
+          if (ps.has(e.u) && ps.has(e.v)) { col = '#7c3aed'; lw = 4; }
+          drawEdgeLine(u.x * W, u.y * H, v.x * W, v.y * H, col, lw, e.w);
+        });
+        nodes.forEach(n => {
+          const hLbl = s.showH ? `h=${n.h}` : undefined;
+          drawNode(n.x * W, n.y * H, R, n.label, ns[n.id] || 'idle', hLbl);
+          label(n.name, n.x * W, n.y * H + (n.y < 0.25 ? -R - 22 : R + 14), 10, '#475569');
+        });
+        if (s.open && s.open.length > 0) {
+          const sorted = [...s.open].sort((a, b) => a.h - b.h);
+          label('Open List (sorted by h):', 14, H - 58, 12, '#475569', 'left', 'middle', true);
+          sorted.slice(0, 7).forEach((item, i) => {
+            const bx = 14 + 165 + i * 60, by = H - 58;
+            const isBest = i === 0;
+            roundRect(bx - 24, by - 13, 48, 26, 6, isBest ? 'rgba(21,128,61,.12)' : '#f1f5f9', isBest ? '#16a34a' : '#94a3b8', isBest ? 2 : 1.5);
+            ctx.font = `700 10px 'JetBrains Mono',monospace`;
+            ctx.fillStyle = isBest ? '#15803d' : '#475569'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(`${item.id} h=${item.h}`, bx, by);
+            if (isBest) label('← pick', bx, by + 18, 9, '#15803d');
+          });
+        }
+      }
+
+      function init() {
+        setHeader(scenario.tag, scenario.title, scenario.desc);
+        setAlgoExplainer(EXPLAINER_TITLE, EXPLAINER_BODY);
+        setLegend([{ color: '#60a5fa', label: 'Start' }, { color: '#4ade80', label: 'Goal' }, { color: '#fb923c', label: 'Currently expanding' }, { color: '#4ade80', border: '#4ade80', sq: true, label: 'In open list' }, { color: '#fbbf24', label: 'h = estimated dist to goal' }, { color: '#c084fc', label: 'Path found (not guaranteed optimal)' }]);
+        steps = buildSteps(); stepI = 0; clearHistory();
+        showStep({ ...steps[0], index: 0 }); setStateCards(steps[0].stats || []); draw(steps[0]);
+        updateBtns(stepI, steps.length);
+      }
+      function nextStep() {
+        if (stepI >= steps.length - 1) return;
+        addHistory({ ...steps[stepI], index: stepI }); stepI++;
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); draw(s);
+        updateBtns(stepI, steps.length);
+      }
+      function prevStep() {
+        if (stepI <= 0) return; stepI--;
+        const el = document.getElementById('stepHistory'); el.innerHTML = '';
+        for (let i = 0; i < stepI; i++) addHistory({ ...steps[i], index: i });
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); draw(s);
+        updateBtns(stepI, steps.length);
+      }
+      return { init, nextStep, prevStep, draw: () => draw(steps[stepI] || steps[0]) };
+    })();
+
+    // ════════════════════════════════════════════════════════
+    // A* — GPS Navigation (Romania-style complex graph)
+    // ════════════════════════════════════════════════════════
+    const ASTAR_ALGO = (() => {
+      const scenario = {
+        tag: '🗺️ GPS NAVIGATION',
+        title: 'A* Search — Best of Both Worlds',
+        desc: 'Your GPS at City S needs to find the cheapest route to the Airport (★). A* uses f(n) = g(n) + h(n): g = actual km driven, h = straight-line estimate remaining. Unlike Greedy, it GUARANTEES the true optimal path!'
+      };
+      const EXPLAINER_TITLE = 'What is A* Search?';
+      const EXPLAINER_BODY = `
+    <strong>A* (A-Star)</strong> combines the best of BFS (finds optimal path) and Greedy (uses heuristic to go fast).<br><br>
+    <span class="tag">f(n) = g(n) + h(n)</span><br>
+    <span class="tag">Optimal: YES (if h is admissible)</span><br>
+    <span class="tag">Complete: YES</span><br><br>
+    <strong>g(n)</strong> = actual cost from start to n (known exactly)<br>
+    <strong>h(n)</strong> = estimated cost from n to goal (heuristic)<br>
+    <strong>f(n)</strong> = total estimated cost of best path through n<br><br>
+    <strong>Key:</strong> h must be <em>admissible</em> (never overestimates). Then A* will always find the true optimal path — never getting fooled the way Greedy does.
+  `;
+      // Romania-map inspired — 13 nodes, shuffled positions, varied weights
+      const nodes = [
+        { id: 'S', label: '📍', name: 'Your City', x: .08, y: .52, h: 20 },
+        { id: 'A', label: 'A', name: 'Aradtown', x: .20, y: .20, h: 16 },
+        { id: 'B', label: 'B', name: 'Badlands', x: .20, y: .78, h: 17 },
+        { id: 'C', label: 'C', name: 'Coldbrook', x: .34, y: .08, h: 12 },
+        { id: 'D', label: 'D', name: 'Dockport', x: .34, y: .38, h: 11 },
+        { id: 'E', label: 'E', name: 'Eastmere', x: .34, y: .70, h: 14 },
+        { id: 'F', label: 'F', name: 'Fairmont', x: .50, y: .18, h: 8 },
+        { id: 'G', label: 'G', name: 'Greenhill', x: .50, y: .50, h: 7 },
+        { id: 'H', label: 'H', name: 'Highbridge', x: .50, y: .80, h: 10 },
+        { id: 'I', label: 'I', name: 'Ironvale', x: .66, y: .28, h: 5 },
+        { id: 'J', label: 'J', name: 'Junction', x: .66, y: .60, h: 4 },
+        { id: 'K', label: 'K', name: 'Kingsley', x: .80, y: .35, h: 2 },
+        { id: '★', label: '✈', name: 'Airport', x: .90, y: .52, h: 0 },
+      ];
+      const edges = [
+        { u: 'S', v: 'A', w: 4 }, { u: 'S', v: 'B', w: 6 }, { u: 'S', v: 'D', w: 9 },
+        { u: 'A', v: 'C', w: 3 }, { u: 'A', v: 'D', w: 5 },
+        { u: 'B', v: 'E', w: 4 }, { u: 'B', v: 'H', w: 8 },
+        { u: 'C', v: 'F', w: 5 }, { u: 'D', v: 'F', w: 4 }, { u: 'D', v: 'G', w: 7 },
+        { u: 'E', v: 'G', w: 6 }, { u: 'E', v: 'H', w: 5 },
+        { u: 'F', v: 'I', w: 4 }, { u: 'G', v: 'I', w: 6 }, { u: 'G', v: 'J', w: 5 },
+        { u: 'H', v: 'J', w: 9 }, { u: 'I', v: 'K', w: 3 }, { u: 'I', v: '★', w: 8 },
+        { u: 'J', v: 'K', w: 5 }, { u: 'J', v: '★', w: 7 }, { u: 'K', v: '★', w: 3 },
+      ];
+      let steps = [], stepI = 0;
+
+      function buildSteps() {
+        const adj = {};
+        nodes.forEach(n => adj[n.id] = []);
+        edges.forEach(e => { adj[e.u].push({ to: e.v, w: e.w }); adj[e.v].push({ to: e.u, w: e.w }); });
+        const getH = id => nodes.find(n => n.id === id)?.h ?? 99;
+        const allSteps = [];
+        allSteps.push({
+          title: '📍 A* GPS: Start Navigation!',
+          explain: `We're at <strong>Your City (S)</strong>, heading to <strong>✈ Airport</strong>.<br><br>A* tracks three values per city:<br>• <strong class="action">g(n)</strong> = km driven so far (exact, shown in blue)<br>• <strong class="highlight">h(n)</strong> = estimated km remaining (shown in gold)<br>• <strong>f(n) = g + h</strong> = total estimated trip cost<br><br><span class="action">We always expand the node with the LOWEST f value.</span><br><br>This balances real progress (g) with proximity to goal (h) — unlike Greedy which ignores g!`,
+          why: `h(n) is admissible here (never overestimates). This mathematical property guarantees A* finds the true optimal path, not just a good-looking one.`,
+          ns: { S: 'start', '★': 'goal' }, open: [{ id: 'S', g: 0, h: getH('S'), f: getH('S') }], showH: true, gCost: { S: 0 },
+          stats: [{ val: 'g+h', lbl: 'f(n)=' }, { val: 0, lbl: 'g=driven' }, { val: getH('S'), lbl: 'h=estimate' }],
+          brief: `A* started at S. f=0+${getH('S')}=${getH('S')}`,
+        });
+        const open = [{ id: 'S', g: 0, h: getH('S'), f: getH('S') }];
+        const visited = new Set(), parent = { S: null }, gCost = { S: 0 };
+        let expanded = 0, found = false;
+        while (open.length && !found) {
+          open.sort((a, b) => a.f - b.f);
+          const cur = open.shift();
+          const node = cur.id;
+          if (visited.has(node)) continue;
+          visited.add(node); expanded++;
+          const ns = {}; visited.forEach(n => ns[n] = 'visited');
+          ns['S'] = 'start'; ns['★'] = 'goal'; ns[node] = 'current';
+          open.forEach(x => { if (!visited.has(x.id)) ns[x.id] = 'frontier'; });
+          const locName = nodes.find(n => n.id === node)?.name || node;
+          const neighbors = adj[node] || [];
+          const added = [];
+          neighbors.forEach(({ to, w }) => {
+            if (!visited.has(to)) {
+              const g = cur.g + w, h = getH(to), f = g + h;
+              const existing = open.find(x => x.id === to);
+              if (!existing) { open.push({ id: to, g, h, f }); parent[to] = node; gCost[to] = g; added.push({ id: to, g, h, f }); }
+              else if (g < existing.g) {
+                const oldF = existing.f;
+                existing.g = g; existing.f = f; parent[to] = node; gCost[to] = g;
+                added.push({ id: to, g, h, f, updated: true, oldF });
+              }
+            }
+          });
+          const sortedOpen = [...open].sort((a, b) => a.f - b.f);
+          const updates = added.filter(a => a.updated);
+          allSteps.push({
+            title: node === '★' ? '✈ Optimal Route Found!' : `A* expands ${locName} — f=${cur.f} (g=${cur.g}+h=${cur.h})`,
+            explain: node === '★'
+              ? `We expanded <strong>✈ Airport</strong> with g=<strong>${cur.g}</strong> km!<br><br><span class="action">✅ A* GUARANTEES this is the shortest possible route.</span><br><br>Because h is admissible (never overestimates), whenever A* expands a node, it has found the cheapest way to reach it. So the first expansion of Airport = optimal cost.<br><br><em>Greedy would have picked the path that "looked shortest" and might have given wrong answer. A* gives certainty.</em>`
+              : `At <strong>${locName}</strong>:<br>• g = <span class="action">${cur.g}</span> km (actual driven)<br>• h = <span class="highlight">${cur.h}</span> km (estimated left)<br>• <strong>f = ${cur.f}</strong> (total estimate)<br><br>${added.filter(a => !a.updated).length ? `New nodes: ${added.filter(a => !a.updated).map(a => `<span class="action">${a.id}</span>(f=${a.f})`).join(', ')}` : ''} ${updates.length ? `<br><span class="warning">Updated: ${updates.map(u => `${u.id} f:${u.oldF}→${u.f}`).join(', ')}</span>` : ''}<br><br><strong>Open list (lowest f first):</strong><br>${sortedOpen.slice(0, 4).map(x => `${x.id}:f=${x.f}(g=${x.g}+h=${x.h})`).join(' | ')}<br><br><span class="highlight">→ Next expand: ${sortedOpen[0]?.id || '—'} (f=${sortedOpen[0]?.f ?? '—'})</span>`,
+            why: node === '★' ? undefined : updates.length ? `When we find a cheaper path to an already-known node, we UPDATE its cost and parent. This is what ensures we never commit to a sub-optimal route.` : `A* picks the node with minimum f = g+h. This ensures we're always exploring the most promising path overall, not just the one that looks closest (h) or has the most progress (g).`,
+            ns: { ...ns }, open: [...open], showH: true, gCost: { ...gCost }, curNode: node,
+            stats: [{ val: cur.g, lbl: 'g (km driven)' }, { val: cur.h, lbl: 'h (estimate)' }, { val: cur.f, lbl: 'f = g+h' }, { val: expanded, lbl: 'Expanded' }],
+            brief: `Expanded ${locName}. g=${cur.g}, h=${cur.h}, f=${cur.f}`,
+          });
+          if (node === '★') { found = true; break; }
+        }
+        if (found) {
+          const path = []; let n = '★'; while (n !== null) { path.unshift(n); n = parent[n]; }
+          const pns = {}; nodes.forEach(nd => pns[nd.id] = 'visited');
+          path.forEach(nd => pns[nd] = 'path'); pns['S'] = 'start'; pns['★'] = 'goal';
+          const cost = gCost['★'] || 0;
+
+          const parentTrace = [];
+          for (let i = path.length - 1; i > 0; i--) {
+            const gv = gCost[path[i]] || 0;
+            parentTrace.push(`${path[i]}(g=${gv}) ← parent: ${path[i - 1]}`);
+          }
+
+          allSteps.push({
+            title: `✅ Guaranteed Optimal Route: ${cost} km`,
+            explain: `<strong>🔍 How was this optimal path determined?</strong><br><br>A* records a <strong>parent pointer</strong> for each node — set when the node is first added to the open list, and <em>updated</em> if a cheaper path to it is later found.<br><br><strong>Parent chain (traceback from ★):</strong><br>${parentTrace.map(t => `• <span class="action">${t}</span>`).join('<br>')}<br><br><strong>Reversed to get forward path:</strong><br><span class="action">${path.join(' → ')}</span><br><br><strong>Total cost: <span class="highlight">${cost} km</span></strong> — this is mathematically the minimum.<br><br><strong>Why A* beats Greedy:</strong> Greedy only uses h (estimate). A* uses g+h, so it never commits to a path that costs more in reality.<br><strong>Why A* beats plain BFS:</strong> BFS counts edges; A* accounts for actual edge weights.`,
+            why: `A* is proven optimal when h is admissible. Since h(n) ≤ true remaining cost always holds here, the first expansion of ★ guarantees g(★) = optimal cost.`,
+            ns: pns, pathSet: new Set(path), showH: true, gCost: { ...gCost },
+            success: true,
+            stats: [{ val: cost, lbl: 'Optimal km' }, { val: path.length - 1, lbl: 'Stops' }, { val: 'YES ✓', lbl: 'Optimal?' }],
+            brief: `OPTIMAL: ${path.join('→')} = ${cost}km`,
+          });
+        }
+        return allSteps;
+      }
+
+      function draw(s) {
+        bg();
+        const W = canvas.width, H = canvas.height, R = Math.min(W, H) * 0.037;
+        const ns = s.ns || {}, ps = s.pathSet || new Set(), g = s.gCost || {};
+        edges.forEach(e => {
+          const u = nodes.find(n => n.id === e.u), v = nodes.find(n => n.id === e.v);
+          let col = '#94a3b8', lw = 1.5;
+          if (ps.has(e.u) && ps.has(e.v)) { col = '#7c3aed'; lw = 4; }
+          drawEdgeLine(u.x * W, u.y * H, v.x * W, v.y * H, col, lw, e.w);
+        });
+        nodes.forEach(n => {
+          let hLbl = s.showH ? `h=${n.h}` : undefined;
+          drawNode(n.x * W, n.y * H, R, n.label, ns[n.id] || 'idle', hLbl);
+          if (g[n.id] !== undefined && n.id !== 'S') {
+            label(`g=${g[n.id]}`, n.x * W, n.y * H + (n.y < 0.3 ? -R - 20 : R + 20), 9, '#1d4ed8');
+          }
+          label(n.name, n.x * W, n.y * H + (n.y < 0.3 ? -R - 30 : R + 12), 9, '#475569');
+        });
+        if (s.open && s.open.length > 0) {
+          const sorted = [...s.open].sort((a, b) => a.f - b.f);
+          label('Open list (pick lowest f):', 14, H - 58, 12, '#475569', 'left', 'middle', true);
+          sorted.slice(0, 5).forEach((item, i) => {
+            const bx = 14 + 186 + i * 72, by = H - 58;
+            const isBest = i === 0;
+            roundRect(bx - 30, by - 13, 60, 26, 5, isBest ? 'rgba(21,128,61,.12)' : '#f1f5f9', isBest ? '#16a34a' : '#94a3b8', isBest ? 2 : 1.5);
+            ctx.font = `600 9px 'JetBrains Mono',monospace`;
+            ctx.fillStyle = isBest ? '#15803d' : '#475569'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(`${item.id} f=${item.f}`, bx, by - 4);
+            ctx.font = `400 8px 'JetBrains Mono',monospace`;
+            ctx.fillStyle = clr(isBest ? '#15803d' : '#475569', .9);
+            ctx.fillText(`g=${item.g}+h=${item.h}`, bx, by + 6);
+            if (isBest) label('← next', bx, by + 19, 8, '#15803d');
+          });
+        }
+      }
+
+      function init() {
+        setHeader(scenario.tag, scenario.title, scenario.desc);
+        setAlgoExplainer(EXPLAINER_TITLE, EXPLAINER_BODY);
+        setLegend([{ color: '#60a5fa', label: 'Start' }, { color: '#4ade80', label: 'Goal' }, { color: '#fb923c', label: 'Currently expanding' }, { color: '#fbbf24', label: 'h=estimate to goal (gold)' }, { color: '#60a5fa', label: 'g=actual cost driven (blue)' }, { color: '#c084fc', label: 'Guaranteed optimal path' }]);
+        steps = buildSteps(); stepI = 0; clearHistory();
+        showStep({ ...steps[0], index: 0 }); setStateCards(steps[0].stats || []); draw(steps[0]);
+        updateBtns(stepI, steps.length);
+      }
+      function nextStep() {
+        if (stepI >= steps.length - 1) return;
+        addHistory({ ...steps[stepI], index: stepI }); stepI++;
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); draw(s);
+        updateBtns(stepI, steps.length);
+      }
+      function prevStep() {
+        if (stepI <= 0) return; stepI--;
+        const el = document.getElementById('stepHistory'); el.innerHTML = '';
+        for (let i = 0; i < stepI; i++) addHistory({ ...steps[i], index: i });
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); draw(s);
+        updateBtns(stepI, steps.length);
+      }
+      return { init, nextStep, prevStep, draw: () => draw(steps[stepI] || steps[0]) };
+    })();
+
+    // ════════════════════════════════════════════════════════
+    // TSP — Delivery Driver (Complex 10-city shuffled layout)
+    // ════════════════════════════════════════════════════════
+    const TSP_ALGO = (() => {
+      const scenario = {
+        tag: '📦 DELIVERY DRIVER',
+        title: 'TSP — Travelling Salesperson Problem',
+        desc: 'Dave starts at the Warehouse and must deliver to 9 addresses across the city, then return home. The cities are deliberately scattered. We compare: Random → Nearest Neighbour (NNA) → 2-opt improvement.'
+      };
+
+      const EXPLAINER_TITLE = 'What is TSP?';
+      const EXPLAINER_BODY = `
+    <strong>Travelling Salesperson Problem</strong> — visit every city exactly once and return to start, minimising total distance.<br><br>
+    <span class="tag">Complexity: NP-Hard</span><br>
+    <span class="tag">Optimal: NOT guaranteed by heuristics</span><br>
+    <span class="tag">Cities: 10 (9! = 362,880 possible routes!)</span><br><br>
+    <strong>Why NP-Hard?</strong> With 10 cities there are 362,880 possible routes. With 20 cities: 60 quadrillion. We can't try them all, so we use smart heuristics.<br><br>
+    <strong>Heuristics shown:</strong><br>
+    1. <em>Random</em> — baseline chaos<br>
+    2. <em>Nearest Neighbour (NNA)</em> — greedy, always go to closest unvisited<br>
+    3. <em>2-opt</em> — improve NNA by "uncrossing" crossed edges
+  `;
+
+      // 10 cities deliberately scattered in non-grid shuffled positions
+      const cities = [
+        { id: 0, name: 'Warehouse', x: .10, y: .52, emoji: '🏭' },
+        { id: 1, name: 'Northwick', x: .25, y: .12, emoji: '🏠' },
+        { id: 2, name: 'Eastgate', x: .68, y: .08, emoji: '🏠' },
+        { id: 3, name: 'Old Quarter', x: .82, y: .30, emoji: '🏠' },
+        { id: 4, name: 'Riverside', x: .88, y: .62, emoji: '🏠' },
+        { id: 5, name: 'Southpark', x: .60, y: .82, emoji: '🏠' },
+        { id: 6, name: 'Millbrook', x: .28, y: .78, emoji: '🏠' },
+        { id: 7, name: 'Crossroads', x: .50, y: .45, emoji: '🏠' },
+        { id: 8, name: 'Hilltop', x: .38, y: .22, emoji: '🏠' },
+        { id: 9, name: 'Docklands', x: .74, y: .55, emoji: '🏠' },
+      ];
+
+      function dist(a, b) { return Math.round(Math.hypot((a.x - b.x) * 900, (a.y - b.y) * 560)); }
+      function tourCost(tour) {
+        let s = 0;
+        for (let i = 0; i < tour.length; i++) s += dist(cities[tour[i]], cities[tour[(i + 1) % tour.length]]);
+        return Math.round(s);
+      }
+
+      function nna() {
+        const visited = new Set([0]), path = [0];
+        while (path.length < cities.length) {
+          const cur = path[path.length - 1];
+          let best = -1, bd = Infinity;
+          cities.forEach(c => { if (!visited.has(c.id)) { const d = dist(cities[cur], c); if (d < bd) { bd = d; best = c.id; } } });
+          visited.add(best); path.push(best);
+        }
+        return path;
+      }
+
+      function twoOpt(t) {
+        const tour = [...t]; let improved = true;
+        while (improved) {
+          improved = false;
+          for (let i = 0; i < tour.length - 1; i++) {
+            for (let j = i + 2; j < tour.length; j++) {
+              const a = tour[i], b = tour[(i + 1) % tour.length], x = tour[j], y = tour[(j + 1) % tour.length];
+              if (dist(cities[a], cities[b]) + dist(cities[x], cities[y]) > dist(cities[a], cities[x]) + dist(cities[b], cities[y]) + 0.5) {
+                let l = i + 1, r = j; while (l < r) { [tour[l], tour[r]] = [tour[r], tour[l]]; l++; r--; } improved = true;
+              }
+            }
+          }
+        }
+        return tour;
+      }
+
+      let steps = [], stepI = 0;
+
+      function buildSteps() {
+        const allSteps = [];
+        // Deliberately bad random tour — criss-crossing
+        const randomTour = [0, 3, 6, 1, 4, 7, 2, 9, 5, 8];
+        const nnaTour = nna();
+        const twOptTour = twoOpt([...nnaTour]);
+        const rCost = tourCost(randomTour), nCost = tourCost(nnaTour), oCost = tourCost(twOptTour);
+
+        allSteps.push({
+          title: '📦 Dave\'s Complex Delivery Challenge',
+          explain: `Dave must visit <strong>9 delivery addresses</strong> scattered across the city and return to <strong>🏭 Warehouse</strong>.<br><br><strong>How many possible routes?</strong> With 9 stops: <span class="highlight">9! = 362,880 routes</span> — impossible to try all of them!<br><br>We'll compare 3 approaches:<br>• <span class="warning">Random</span> — chaotic, criss-crossing<br>• <span class="action">Nearest Neighbour (NNA)</span> — greedy heuristic<br>• <span class="highlight">2-opt</span> — local search improvement<br><br>Watch how each method improves on the last!`,
+          why: `TSP is NP-Hard: no known algorithm can find the perfect route for large inputs in reasonable time. Heuristics give "good enough" answers quickly.`,
+          tour: null, highlight: -1, phase: 'intro',
+          stats: [{ val: cities.length, lbl: 'Cities' }, { val: '362,880', lbl: 'Possible routes' }, { val: 'NP-Hard', lbl: 'Complexity' }],
+          brief: 'Problem introduced. 9 deliveries, need efficient route.',
+        });
+
+        allSteps.push({
+          title: 'Phase 1 — Random Route (No Planning)',
+          explain: `Dave visits in a random order: <span class="warning">W→3→6→1→4→7→2→9→5→8→W</span><br><br>Total distance: <span class="warning">${rCost} units</span><br><br>Look at the graph — lines are criss-crossing everywhere! Dave is zigzagging across the whole city, wasting huge amounts of fuel.<br><br><em>This is our worst-case baseline. Any smart method should beat this easily.</em>`,
+          why: `Without planning, routes criss-cross themselves. Crossing edges are ALWAYS suboptimal — you can always "uncross" them to get a shorter route.`,
+          tour: randomTour, highlight: -1, phase: 'random',
+          stats: [{ val: rCost, lbl: 'Distance' }, { val: 'None', lbl: 'Strategy' }, { val: '❌ Worst', lbl: 'Quality' }],
+          brief: `Random route: ${rCost} units. Many crossing edges.`,
+        });
+
+        // NNA step by step
+        const nnPath = [0];
+        const nnVis = new Set([0]);
+        let nnCur = 0;
+        for (let step = 0; step < cities.length - 1; step++) {
+          let best = -1, bd = Infinity;
+          cities.forEach(c => { if (!nnVis.has(c.id)) { const d = dist(cities[nnCur], c); if (d < bd) { bd = d; best = c.id; } } });
+          nnVis.add(best); nnPath.push(best);
+          const partial = [...nnPath];
+          const remaining = cities.filter(c => !nnVis.has(c.id));
+          allSteps.push({
+            title: `Phase 2: NNA — ${cities[nnCur].name} → ${cities[best].name}`,
+            explain: `Currently at <strong>${cities[nnCur].name}</strong> (City ${nnCur}).<br><br>We scan all <strong>${remaining.length + 1} unvisited cities</strong> and pick the nearest one.<br><br>Nearest unvisited: <span class="action">${cities[best].name}</span> (distance: <strong>${bd} units</strong>)<br><br>${remaining.length ? `Still unvisited: <span class="highlight">${remaining.map(c => c.name).join(', ')}</span>` : `<span class="action">✅ All cities visited! Now return to Warehouse.</span>`}<br><br><em>NNA is greedy: best local choice at each step. It doesn't look ahead — so it can paint itself into a corner.</em>`,
+            why: `"Nearest" feels right at each step but doesn't guarantee the globally shortest tour. The last few cities in NNA often require long backtracking legs.`,
+            tour: partial, highlight: best, phase: 'nna', visited: new Set(nnVis),
+            stats: [{ val: bd, lbl: 'Step dist' }, { val: partial.length - 1, lbl: 'Visited' }, { val: remaining.length, lbl: 'Remaining' }],
+            brief: `NNA: ${cities[nnCur].name}→${cities[best].name} (${bd}). ${remaining.length} remaining.`,
+          });
+          nnCur = best;
+        }
+
+        allSteps.push({
+          title: `Phase 2: NNA Complete — Total ${nCost} units`,
+          explain: `All 9 cities visited! Dave returns to <strong>🏭 Warehouse</strong>.<br><br><strong>NNA tour: <span class="action">${nnaTour.map(i => i === 0 ? 'W' : i).join('→')}→W</span></strong><br><br>NNA distance: <span class="action">${nCost} units</span><br>vs Random: <span class="warning">${rCost} units</span><br><br><span class="action">Saved ${rCost - nCost} units</span> (${Math.round((rCost - nCost) / rCost * 100)}% improvement)!<br><br>But look carefully — do any lines still cross? If so, we can improve further with 2-opt.`,
+          why: `NNA typically gives routes 20-25% longer than optimal. It's fast (O(n²)) but local greediness causes inefficiencies, especially for the last few cities added.`,
+          tour: nnaTour, highlight: 0, phase: 'nna_done',
+          stats: [{ val: nCost, lbl: 'NNA dist' }, { val: rCost, lbl: 'Random dist' }, { val: `-${rCost - nCost}`, lbl: 'Saved' }],
+          brief: `NNA complete: ${nCost} units. Saved ${rCost - nCost} vs random.`,
+        });
+
+        allSteps.push({
+          title: 'Phase 3: 2-opt — Finding Crossing Edges to Fix',
+          explain: `Now we apply <strong>2-opt improvement</strong>. The idea:<br><br>Pick any 2 edges in the tour. If <em>swapping</em> them (reversing the segment between them) makes the route shorter, do it.<br><br><strong>Visually:</strong> if two route lines cross each other on the map, uncrossing them ALWAYS makes the route shorter. 2-opt finds and fixes all such crossings.<br><br><span class="action">We keep swapping until no more improvements are possible.</span>`,
+          why: `Two crossing edges (A→B and C→D) can always be replaced by (A→C and B→D) with a shorter total length — it's a geometric fact. 2-opt exploits this repeatedly.`,
+          tour: nnaTour, highlight: -1, phase: 'twoopt_start',
+          stats: [{ val: nCost, lbl: 'Before 2-opt' }, { val: '?', lbl: 'After 2-opt' }, { val: 'Local search', lbl: 'Method' }],
+          brief: `2-opt starting. Looking for crossed edges to uncross...`,
+        });
+
+        allSteps.push({
+          title: `Phase 3: 2-opt Done — ${oCost} units`,
+          explain: `After 2-opt, the route is now <span class="highlight">${oCost} units</span>.<br><br>${oCost < nCost ? `<span class="action">Saved another ${nCost - oCost} units</span> by uncrossing edges!` : 'The NNA route had no crossing edges — already locally optimal.'}<br><br><strong>2-opt route: <span class="action">${twOptTour.map(i => i === 0 ? 'W' : i).join('→')}→W</span></strong><br><br>All edges now flow without crossing — no further 2-opt improvements are possible.`,
+          why: `2-opt is "locally optimal" — no 2-edge swap can improve it further. But it's not globally optimal (that would require checking all k-opt swaps for all k).`,
+          tour: twOptTour, highlight: -1, phase: 'twoopt_done',
+          stats: [{ val: oCost, lbl: 'After 2-opt' }, { val: nCost, lbl: 'Before' }, { val: `-${nCost - oCost}`, lbl: '2-opt saved' }],
+          brief: `2-opt done: ${oCost} units. Saved ${nCost - oCost} more.`,
+        });
+
+        allSteps.push({
+          title: '📊 Summary: All 3 Methods Compared',
+          explain: `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:4px">
+        <tr><th style="text-align:left;color:#4a5a7a;padding:3px 0">Method</th><th style="color:#4a5a7a;padding:3px 0">Distance</th><th style="color:#4a5a7a;padding:3px 0">vs Random</th></tr>
+        <tr><td style="color:#f87171">Random</td><td style="color:#f87171;text-align:center">${rCost}</td><td style="color:#4a5a7a;text-align:center">baseline</td></tr>
+        <tr><td style="color:#22d3ee">NNA</td><td style="color:#22d3ee;text-align:center">${nCost}</td><td style="color:#4ade80;text-align:center">-${rCost - nCost} (${Math.round((rCost - nCost) / rCost * 100)}%)</td></tr>
+        <tr><td style="color:#c084fc">2-opt</td><td style="color:#c084fc;text-align:center">${oCost}</td><td style="color:#4ade80;text-align:center">-${rCost - oCost} (${Math.round((rCost - oCost) / rCost * 100)}%)</td></tr>
+      </table><br><em>For TSP, even 2-opt doesn't guarantee the true optimum. The best known exact methods (branch & bound) are exponential in the worst case — that's what NP-Hard means.</em>`,
+          why: `The optimal solution might be slightly better than 2-opt, but finding it for large n is computationally infeasible. Real delivery companies use advanced metaheuristics like Simulated Annealing or Genetic Algorithms.`,
+          tour: twOptTour, highlight: -1, phase: 'summary', success: true,
+          stats: [{ val: rCost, lbl: 'Random' }, { val: nCost, lbl: 'NNA' }, { val: oCost, lbl: '2-opt' }],
+          brief: `Final: 2-opt=${oCost}. Total saving: ${rCost - oCost} vs random.`,
+        });
+
+        return allSteps;
+      }
+
+      function drawTSP(s) {
+        bg();
+        const W = canvas.width, H = canvas.height;
+        const R = Math.min(W, H) * 0.040;
+        const { tour, highlight, visited, phase } = s;
+
+        // ── STEP 1: Always draw ALL possible edges as dashed grey lines with distances ──
+        // This shows the full graph before routing begins
+        for (let i = 0; i < cities.length; i++) {
+          for (let j = i + 1; j < cities.length; j++) {
+            const a = cities[i], b = cities[j];
+            const d = dist(a, b);
+            // Only draw shorter edges (within ~40% of canvas width) to avoid clutter
+            const maxDist = Math.hypot(W * 0.45, H * 0.45);
+            if (d > maxDist) continue;
+            // Draw dashed background edge
+            ctx.save();
+            ctx.setLineDash([5, 7]);
+            ctx.beginPath();
+            ctx.moveTo(a.x * W, a.y * H);
+            ctx.lineTo(b.x * W, b.y * H);
+            ctx.strokeStyle = 'rgba(148,163,184,0.35)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.restore();
+            // Show distance value at midpoint
+            const mx = (a.x + b.x) / 2 * W, my = (a.y + b.y) / 2 * H;
+            ctx.save();
+            ctx.font = `400 8px 'JetBrains Mono',monospace`;
+            ctx.fillStyle = 'rgba(100,116,139,0.55)';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(d, mx, my);
+            ctx.restore();
+          }
+        }
+
+        // ── STEP 2: Draw the active tour route on top (solid, highlighted) ──
+        if (tour && tour.length > 1) {
+          const isFull = phase === 'random' || phase === 'nna_done' || phase === 'twoopt_start' || phase === 'twoopt_done' || phase === 'summary';
+          const edgeCount = isFull ? tour.length : tour.length - 1;
+          for (let i = 0; i < edgeCount; i++) {
+            const a = cities[tour[i]], b = cities[tour[(i + 1) % tour.length]];
+            const isNew = i === tour.length - 2 && !isFull;
+            let col = phase === 'twoopt_done' || phase === 'summary' ? '#7c3aed' : phase === 'random' ? '#dc2626' : '#0369a1';
+            let lw = phase === 'random' ? 2 : 3;
+            if (isNew) { col = '#ea580c'; lw = 4; }
+            // Draw solid route edge
+            ctx.beginPath();
+            ctx.moveTo(a.x * W, a.y * H);
+            ctx.lineTo(b.x * W, b.y * H);
+            ctx.strokeStyle = col;
+            ctx.lineWidth = lw;
+            ctx.stroke();
+            // Draw highlighted distance label on active edges
+            const mx = (a.x + b.x) / 2 * W, my = (a.y + b.y) / 2 * H;
+            const d = dist(a, b);
+            // Small background pill for the distance
+            ctx.save();
+            ctx.font = `600 9px 'JetBrains Mono',monospace`;
+            const tw = ctx.measureText(d).width + 8;
+            ctx.fillStyle = isNew ? 'rgba(234,88,12,0.15)' : phase === 'twoopt_done' || phase === 'summary' ? 'rgba(124,58,237,0.12)' : phase === 'random' ? 'rgba(220,38,38,0.10)' : 'rgba(3,105,161,0.12)';
+            ctx.beginPath();
+            ctx.roundRect(mx - tw / 2, my - 8, tw, 16, 4);
+            ctx.fill();
+            ctx.fillStyle = isNew ? '#c2410c' : phase === 'twoopt_done' || phase === 'summary' ? '#6d28d9' : phase === 'random' ? '#b91c1c' : '#0369a1';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(d, mx, my);
+            ctx.restore();
+          }
+          // Close tour loop for full phases
+          if (isFull && tour.length > 1) {
+            const a = cities[tour[tour.length - 1]], b = cities[tour[0]];
+            ctx.beginPath();
+            ctx.moveTo(a.x * W, a.y * H);
+            ctx.lineTo(b.x * W, b.y * H);
+            const col = phase === 'twoopt_done' || phase === 'summary' ? '#7c3aed' : phase === 'random' ? '#dc2626' : '#0369a1';
+            ctx.strokeStyle = col; ctx.lineWidth = phase === 'random' ? 2 : 3; ctx.stroke();
+          }
+        }
+
+        // ── STEP 3: Draw city nodes on top of everything ──
+        cities.forEach(c => {
+          const isStart = c.id === 0;
+          const isHighlight = c.id === highlight;
+          const isVisited = visited ? visited.has(c.id) : false;
+          let fill = isStart ? '#dcfce7' : isHighlight ? '#fed7aa' : isVisited ? '#dbeafe' : '#f8fafc';
+          let border = isStart ? '#16a34a' : isHighlight ? '#ea580c' : isVisited ? '#2563eb' : '#64748b';
+          let lw = isHighlight || isStart ? 3 : 2;
+          if (isHighlight) {
+            ctx.beginPath(); ctx.arc(c.x * W, c.y * H, R + 10, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(234,88,12,0.12)'; ctx.fill();
+          }
+          circle(c.x * W, c.y * H, R, fill, border, lw);
+          ctx.font = `700 ${R * .55}px 'Syne',sans-serif`;
+          ctx.fillStyle = '#1e293b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(isStart ? 'W' : String(c.id), c.x * W, c.y * H);
+          const labelY = c.y < 0.45 ? c.y * H - R - 14 : c.y * H + R + 14;
+          // Name label with background
+          ctx.save();
+          ctx.font = `400 10px 'Nunito',sans-serif`;
+          const nw = ctx.measureText(c.name).width + 8;
+          ctx.fillStyle = 'rgba(248,250,252,0.85)';
+          ctx.beginPath(); ctx.roundRect(c.x * W - nw / 2, labelY - 7, nw, 14, 3); ctx.fill();
+          ctx.fillStyle = '#475569'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(c.name, c.x * W, labelY);
+          ctx.restore();
+        });
+
+        // ── Phase badge ──
+        const phaseColors = { intro: '#b45309', random: '#b91c1c', nna: '#0369a1', nna_done: '#15803d', twoopt_start: '#6d28d9', twoopt_done: '#6d28d9', summary: '#15803d' };
+        const phaseNames = { intro: 'Problem Setup', random: 'Phase 1: Random (chaotic)', nna: 'Phase 2: Nearest Neighbour', nna_done: 'Phase 2: NNA Complete', twoopt_start: 'Phase 3: 2-opt Starting', twoopt_done: 'Phase 3: 2-opt Done', summary: 'Final Comparison' };
+        const pcolor = phaseColors[phase] || '#b45309';
+        const ptxt = phaseNames[phase] || phase;
+        ctx.save();
+        ctx.font = `700 12px 'JetBrains Mono',monospace`;
+        const pw = ctx.measureText(ptxt).width + 20;
+        ctx.fillStyle = clr(pcolor.length === 7 ? pcolor : '#b45309', .12);
+        ctx.strokeStyle = pcolor; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(W / 2 - pw / 2, 8, pw, 26, 13); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = pcolor; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(ptxt, W / 2, 21);
+        ctx.restore();
+
+        // ── Distance legend ──
+        if (tour && tour.length > 2) {
+          const dispTour = phase === 'nna' ? [...tour, 0] : tour;
+          const cost = tourCost(dispTour);
+          ctx.save();
+          ctx.font = `600 12px 'JetBrains Mono',monospace`;
+          const dtxt = `Total distance: ${cost} units`;
+          const dw = ctx.measureText(dtxt).width + 16;
+          ctx.fillStyle = 'rgba(248,250,252,0.9)';
+          ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.roundRect(W / 2 - dw / 2, H - 34, dw, 24, 6); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = '#334155'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(dtxt, W / 2, H - 22);
+          ctx.restore();
+        }
+      }
+
+      function init() {
+        setHeader(scenario.tag, scenario.title, scenario.desc);
+        setAlgoExplainer(EXPLAINER_TITLE, EXPLAINER_BODY);
+        setLegend([{ color: '#4ade80', label: 'Warehouse (start/end)' }, { color: '#0369a1', label: 'NNA route' }, { color: '#f87171', label: 'Random route' }, { color: '#fb923c', label: 'Latest city added' }, { color: '#7c3aed', label: '2-opt improved route' }]);
+        steps = buildSteps(); stepI = 0; clearHistory();
+        showStep({ ...steps[0], index: 0 }); setStateCards(steps[0].stats || []); drawTSP(steps[0]);
+        updateBtns(stepI, steps.length);
+      }
+      function nextStep() {
+        if (stepI >= steps.length - 1) return;
+        addHistory({ ...steps[stepI], index: stepI }); stepI++;
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); drawTSP(s);
+        updateBtns(stepI, steps.length);
+      }
+      function prevStep() {
+        if (stepI <= 0) return; stepI--;
+        const el = document.getElementById('stepHistory'); el.innerHTML = '';
+        for (let i = 0; i < stepI; i++) addHistory({ ...steps[i], index: i });
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); drawTSP(s);
+        updateBtns(stepI, steps.length);
+      }
+      return { init, nextStep, prevStep, draw: () => drawTSP(steps[stepI] || steps[0]) };
+    })();
+
+    // ════════════════════════════════════════════════════════
+    // 8-PUZZLE
+    // ════════════════════════════════════════════════════════
+    const PUZZLE_ALGO = (() => {
+      const scenario = {
+        tag: '🧩 SLIDING PUZZLE',
+        title: '8-Puzzle — BFS Solver',
+        desc: 'You have a 3×3 grid with tiles 1–8 and one empty space. Slide tiles into the empty space to reach the goal arrangement. BFS finds the solution with the fewest moves.'
+      };
+      const EXPLAINER_TITLE = 'What is the 8-Puzzle?';
+      const EXPLAINER_BODY = `
+    The <strong>8-Puzzle</strong> is a classic search problem. A 3×3 grid holds tiles 1–8 plus one empty space. You slide tiles into the empty space to reach the goal state.<br><br>
+    <span class="tag">Algorithm: BFS</span><br>
+    <span class="tag">Optimal: YES (fewest moves)</span><br>
+    <span class="tag">State space: up to 181,440 states</span><br><br>
+    <strong>Why BFS?</strong> BFS guarantees the <em>minimum number of moves</em>. Each "state" is a board configuration. BFS explores all states reachable in 1 move, then 2 moves, etc. — so the first time it reaches the goal, it must be via the fewest moves.<br><br>
+    <strong>The challenge:</strong> The state space is huge — 9! / 2 = 181,440 valid states.
+  `;
+      const GOAL = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+      function getMoves(b) {
+        const idx = b.indexOf(0), r = Math.floor(idx / 3), c = idx % 3, moves = [];
+        if (r > 0) { const nb = [...b];[nb[idx], nb[idx - 3]] = [nb[idx - 3], nb[idx]]; moves.push({ board: nb, moved: b[idx - 3], dir: 'down' }); }
+        if (r < 2) { const nb = [...b];[nb[idx], nb[idx + 3]] = [nb[idx + 3], nb[idx]]; moves.push({ board: nb, moved: b[idx + 3], dir: 'up' }); }
+        if (c > 0) { const nb = [...b];[nb[idx], nb[idx - 1]] = [nb[idx - 1], nb[idx]]; moves.push({ board: nb, moved: b[idx - 1], dir: 'right' }); }
+        if (c < 2) { const nb = [...b];[nb[idx], nb[idx + 1]] = [nb[idx + 1], nb[idx]]; moves.push({ board: nb, moved: b[idx + 1], dir: 'left' }); }
+        return moves;
+      }
+      function solve(start) {
+        if (start.join() === GOAL.join()) return [start];
+        const q = [{ b: start, path: [start] }], vis = new Set([start.join()]);
+        while (q.length) {
+          const { b, path } = q.shift();
+          for (const { board: nb } of getMoves(b)) {
+            const k = nb.join(); if (!vis.has(k)) { vis.add(k); const np = [...path, nb]; if (k === GOAL.join()) return np; q.push({ b: nb, path: np }); }
+          }
+        }
+        return [start];
+      }
+      let steps = [], stepI = 0;
+      const START = [1, 2, 3, 4, 0, 6, 7, 5, 8];
+
+      function buildSteps() {
+        const sol = solve([...START]);
+        const allSteps = [];
+        allSteps.push({
+          board: START, prev: START, moveDesc: 'Starting position', stepNum: 0, total: sol.length - 1,
+          title: '🧩 Starting Position — BFS will solve this',
+          explain: `Here's the puzzle! Tiles are in a scrambled arrangement. The <strong>empty space (□)</strong> is in the middle.<br><br><strong>Goal:</strong> reach the arrangement <strong>1,2,3 / 4,5,6 / 7,8,□</strong>.<br><br>BFS solves this by treating each board configuration as a <em>node</em> in a graph. Each legal tile slide is an <em>edge</em>. BFS guarantees the <strong>minimum number of moves</strong> by exploring 1-move states before 2-move states, etc.<br><br>BFS found a solution in <strong>${sol.length - 1} moves</strong>. Follow along step by step!`,
+          why: `BFS processes board states level by level (all 1-move states, then all 2-move states...). The first time the goal state is discovered = minimum moves guaranteed.`,
+          stats: [{ val: sol.length - 1, lbl: 'Min moves' }, { val: 0, lbl: 'Done so far' }, { val: 'BFS', lbl: 'Algorithm' }],
+          brief: `Puzzle started. BFS found ${sol.length - 1}-move solution.`,
+        });
+        for (let i = 1; i < sol.length; i++) {
+          const prev = sol[i - 1], cur = sol[i];
+          const emptyPrev = prev.indexOf(0), emptyCur = cur.indexOf(0);
+          const movedTile = cur[emptyPrev];
+          const dr = Math.floor(emptyPrev / 3) - Math.floor(emptyCur / 3);
+          const dc = (emptyPrev % 3) - (emptyCur % 3);
+          let dir = 'across';
+          if (dr === 1) dir = 'down'; else if (dr === -1) dir = 'up'; else if (dc === 1) dir = 'right'; else if (dc === -1) dir = 'left';
+          const correctSoFar = cur.filter((v, idx) => v !== 0 && v === GOAL[idx]).length;
+          const rowNames = ['top', 'middle', 'bottom'];
+          const colNames = ['left', 'centre', 'right'];
+          const fromRow = rowNames[Math.floor(emptyPrev / 3)], fromCol = colNames[emptyPrev % 3];
+          const toRow = rowNames[Math.floor(emptyCur / 3)], toCol = colNames[emptyCur % 3];
+          allSteps.push({
+            board: cur, prev, moveDesc: `Tile ${movedTile} slid ${dir}`, stepNum: i, total: sol.length - 1,
+            title: `Move ${i}/${sol.length - 1}: Slide tile ${movedTile} ${dir}`,
+            explain: `Slide tile <strong>${movedTile}</strong> ${dir} into the empty space.<br><br>The empty space was at <strong>${fromRow}-${fromCol}</strong> (position ${emptyPrev}) and is now at <strong>${toRow}-${toCol}</strong> (position ${emptyCur}).<br><br><strong>${correctSoFar} of 8</strong> tiles are now in their correct final position. <span style="color:var(--green)">${'█'.repeat(correctSoFar)}</span><span style="color:var(--border2)">${'□'.repeat(8 - correctSoFar)}</span><br><br>${i === sol.length - 1 ? `<span class="action">🎉 Puzzle solved in the minimum ${sol.length - 1} moves!</span>` : `<em>${sol.length - 1 - i} more moves to go.</em>`}`,
+            why: i === sol.length - 1 ? `BFS explored every reachable state layer by layer. This path has ${sol.length - 1} moves — the smallest possible. Any other solution path would require at least as many moves.` : undefined,
+            success: i === sol.length - 1,
+            stats: [{ val: i, lbl: 'Move' }, { val: sol.length - 1 - i, lbl: 'Remaining' }, { val: `${correctSoFar}/8`, lbl: 'Correct tiles' }],
+            brief: `Move ${i}: Tile ${movedTile} slid ${dir}. ${correctSoFar}/8 tiles correct.`,
+          });
+        }
+        return allSteps;
+      }
+
+      function drawPuzzle(s) {
+        bg();
+        const W = canvas.width, H = canvas.height;
+        const sz = Math.min(W * .52, H * .68);
+        const ox = (W * .44 - sz) / 2, oy = (H - sz) / 2;
+        const cell = sz / 3;
+        roundRect(ox - 8, oy - 8, sz + 16, sz + 16, 16, '#f0f4f8', '#94a3b8', 2);
+        s.board.forEach((val, i) => {
+          const r = Math.floor(i / 3), c = i % 3;
+          const x = ox + c * cell + 6, y = oy + r * cell + 6, w = cell - 12, h = cell - 12;
+          if (val === 0) {
+            roundRect(x, y, w, h, 10, '#e2e8f0', '#94a3b8', 1);
+            ctx.font = `400 ${cell * .28}px 'Nunito',sans-serif`; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('□', x + w / 2, y + h / 2);
+            return;
+          }
+          const isCorrect = GOAL[i] === val;
+          const wasEmpty = s.prev && s.prev[i] === 0 && val !== 0;
+          const fill = wasEmpty ? '#fed7aa' : isCorrect ? '#dcfce7' : '#f1f5f9';
+          const border = wasEmpty ? '#ea580c' : isCorrect ? '#16a34a' : '#94a3b8';
+          const lw = wasEmpty || isCorrect ? 3 : 1.5;
+          if (wasEmpty) { ctx.beginPath(); ctx.roundRect(x - 3, y - 3, w + 6, h + 6, 12); ctx.fillStyle = clr('#fb923c', .1); ctx.fill(); }
+          roundRect(x, y, w, h, 10, fill, border, lw);
+          ctx.font = `700 ${cell * .38}px 'Syne',sans-serif`;
+          ctx.fillStyle = wasEmpty ? '#c2410c' : isCorrect ? '#15803d' : '#1e293b';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(val, x + w / 2, y + h / 2);
+          if (isCorrect && !wasEmpty) {
+            ctx.font = `400 10px 'Nunito',sans-serif`; ctx.fillStyle = 'rgba(21,128,61,0.7)';
+            ctx.fillText('✓', x + w - 10, y + 12);
+          }
+        });
+
+        // Goal state
+        const gsz = sz * .52;
+        const gox = W * .50 + 10, goy = (H - gsz) / 2;
+        label('Goal State:', gox + gsz / 2, goy - 20, 13, '#475569', 'center', 'middle', true);
+        roundRect(gox - 4, goy - 4, gsz + 8, gsz + 8, 10, '#f0f4f8', '#94a3b8', 1.5);
+        const gc = gsz / 3;
+        GOAL.forEach((val, i) => {
+          const r = Math.floor(i / 3), c = i % 3;
+          const x = gox + c * gc + 3, y2 = goy + r * gc + 3, w = gc - 6, h = gc - 6;
+          if (val === 0) { roundRect(x, y2, w, h, 6, '#e2e8f0', undefined); return; }
+          const isCorrect = s.board && s.board[i] === val;
+          roundRect(x, y2, w, h, 6, isCorrect ? '#dcfce7' : '#f1f5f9', isCorrect ? '#16a34a' : '#94a3b8', isCorrect ? 2 : 1);
+          ctx.font = `700 ${gc * .38}px 'Syne',sans-serif`;
+          ctx.fillStyle = isCorrect ? '#15803d' : '#1e293b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(val, x + w / 2, y2 + h / 2);
+        });
+
+        // Progress bar
+        const prog = (s.stepNum || 0) / (s.total || 1);
+        roundRect(ox, oy + sz + 18, sz, 10, 5, '#f1f5f9', '#94a3b8', 1);
+        if (prog > 0) roundRect(ox, oy + sz + 18, sz * prog, 10, 5, '#0369a1', undefined);
+        label(`Move ${s.stepNum || 0} of ${s.total || 0} (BFS optimal)`, ox + sz / 2, oy + sz + 36, 11, '#475569');
+      }
+
+      function init() {
+        setHeader(scenario.tag, scenario.title, scenario.desc);
+        setAlgoExplainer(EXPLAINER_TITLE, EXPLAINER_BODY);
+        setLegend([{ color: '#16a34a', label: 'Tile in correct position ✓' }, { color: '#fb923c', label: 'Tile just moved (slid here)' }, { color: '#64748b', label: 'Tile not yet in correct position' }]);
+        steps = buildSteps(); stepI = 0; clearHistory();
+        showStep({ ...steps[0], index: 0 }); setStateCards(steps[0].stats || []); drawPuzzle(steps[0]);
+        updateBtns(stepI, steps.length);
+      }
+      function nextStep() {
+        if (stepI >= steps.length - 1) return;
+        addHistory({ ...steps[stepI], index: stepI }); stepI++;
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); drawPuzzle(s);
+        updateBtns(stepI, steps.length);
+      }
+      function prevStep() {
+        if (stepI <= 0) return; stepI--;
+        const el = document.getElementById('stepHistory'); el.innerHTML = '';
+        for (let i = 0; i < stepI; i++) addHistory({ ...steps[i], index: i });
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); drawPuzzle(s);
+        updateBtns(stepI, steps.length);
+      }
+      return { init, nextStep, prevStep, draw: () => drawPuzzle(steps[stepI] || steps[0]) };
+    })();
+
+    // ════════════════════════════════════════════════════════
+    // DECISION TREE — Loan Application
+    // ════════════════════════════════════════════════════════
+    const DECISION_ALGO = (() => {
+      const scenario = {
+        tag: '🏦 BANK LOAN DECISION',
+        title: 'Decision Tree — Should We Approve This Loan?',
+        desc: 'A bank uses a decision tree to decide whether to approve or reject a loan application. Each node asks a yes/no question. We follow the path step by step based on the applicant\'s answers.'
+      };
+      const EXPLAINER_TITLE = 'What is a Decision Tree?';
+      const EXPLAINER_BODY = `
+    A <strong>Decision Tree</strong> is a flowchart-like structure where each internal node tests an attribute, each branch is a yes/no answer, and each leaf node gives a decision.<br><br>
+    <span class="tag">Type: Supervised Learning / Rule-based</span><br>
+    <span class="tag">Structure: Binary tree</span><br>
+    <span class="tag">Depth here: max 3 questions</span><br><br>
+    <strong>How it works:</strong> Start at the root question. Answer YES or NO. Follow that branch to the next question. Repeat until you reach a leaf (= final decision).<br><br>
+    <strong>Used in:</strong> Medical diagnosis, credit scoring, fraud detection, customer segmentation — any domain needing transparent, explainable decisions.
+  `;
+
+      const tree = {
+        id: 'root', type: 'D', text: 'Credit Score\n> 700?', x: .5, y: .1,
+        yes: {
+          id: 'n1', type: 'D', text: 'Income\n> £30k?', x: .28, y: .3,
+          yes: {
+            id: 'n3', type: 'D', text: 'Existing\nDebts?', x: .16, y: .52,
+            yes: { id: 'n7', type: 'L', text: '⚠️ Conditional\nApproval', x: .08, y: .74, color: '#fbbf24' },
+            no: { id: 'n8', type: 'L', text: '✅ Fully\nApproved', x: .24, y: .74, color: '#4ade80' }
+          },
+          no: { id: 'n4', type: 'L', text: '❌ Low\nIncome', x: .36, y: .52, color: '#f87171' }
+        },
+        no: {
+          id: 'n2', type: 'D', text: 'Loan Amount\n< £5000?', x: .72, y: .3,
+          yes: {
+            id: 'n5', type: 'D', text: 'Employment\nStable?', x: .58, y: .52,
+            yes: { id: 'n9', type: 'L', text: '✅ Small\nLoan OK', x: .5, y: .74, color: '#4ade80' },
+            no: { id: 'n10', type: 'L', text: '❌ Unstable\nIncome', x: .66, y: .74, color: '#f87171' }
+          },
+          no: { id: 'n6', type: 'L', text: '❌ High Risk\nRejected', x: .84, y: .52, color: '#f87171' }
+        },
+      };
+
+      // Example applicant path
+      const applicant = { name: 'Sarah', creditScore: 620, income: 35000, debts: false, loanAmount: 3000, employed: true };
+
+      let steps = [], stepI = 0;
+
+      function buildSteps() {
+        const allSteps = [];
+        allSteps.push({
+          revealed: new Set(['root']), active: null,
+          title: '🏦 Loan Application Arrives',
+          explain: `<strong>Applicant: Sarah</strong><br><br>Sarah's details:<br>• Credit Score: <span class="warning">${applicant.creditScore}</span><br>• Annual Income: <span class="action">£${applicant.income.toLocaleString()}</span><br>• Existing Debts: <span class="action">${applicant.debts ? 'Yes' : 'No'}</span><br>• Loan Amount: <span class="action">£${applicant.loanAmount.toLocaleString()}</span><br>• Employment: <span class="action">${applicant.employed ? 'Stable' : 'Unstable'}</span><br><br>We'll follow the decision tree step by step to get the verdict.`,
+          stats: [{ val: 'Sarah', lbl: 'Applicant' }, { val: applicant.creditScore, lbl: 'Credit Score' }, { val: '£' + applicant.income.toLocaleString(), lbl: 'Income' }, { val: 'Pending', lbl: 'Decision' }],
+        });
+
+        // Step 1: Credit score check
+        const creditOK = applicant.creditScore > 700;
+        allSteps.push({
+          revealed: new Set(['root']), active: 'root',
+          path: ['root'],
+          title: `Question 1: Is credit score > 700?`,
+          explain: `First question: <strong>Is Sarah's credit score above 700?</strong><br><br>Sarah's credit score: <span class="warning">${applicant.creditScore}</span><br><br>${creditOK ? `<span class="action">YES — ${applicant.creditScore} > 700 ✓</span> → Go to the LEFT branch.` : `<span class="warning">NO — ${applicant.creditScore} is NOT above 700 ✗</span> → Go to the RIGHT branch.`}<br><br><em>The tree splits here: good credit goes one way, poor credit another.</em>`,
+          stats: [{ val: applicant.creditScore, lbl: 'Sarah Score' }, { val: 700, lbl: 'Threshold' }, { val: creditOK ? 'YES ✓' : 'NO ✗', lbl: 'Answer' }],
+        });
+
+        if (!creditOK) {
+          // n2: loan amount
+          const smallLoan = applicant.loanAmount < 5000;
+          allSteps.push({
+            revealed: new Set(['root', 'n2']), active: 'n2', path: ['root', 'n2'],
+            title: `Question 2: Loan amount < £5,000?`,
+            explain: `Since credit score is low, we check the <strong>loan amount</strong>.<br><br>Sarah wants: <span class="action">£${applicant.loanAmount.toLocaleString()}</span><br><br>${smallLoan ? `<span class="action">YES — £${applicant.loanAmount} < £5000 ✓</span> → Might still be OK for a small loan.` : `<span class="warning">NO — Too large a loan for poor credit ✗</span> → Reject.`}`,
+            stats: [{ val: '£' + applicant.loanAmount.toLocaleString(), lbl: 'Loan' }, { val: '£5000', lbl: 'Threshold' }, { val: smallLoan ? 'YES ✓' : 'NO ✗', lbl: 'Answer' }],
+          });
+
+          if (smallLoan) {
+            const stable = applicant.employed;
+            allSteps.push({
+              revealed: new Set(['root', 'n2', 'n5']), active: 'n5', path: ['root', 'n2', 'n5'],
+              title: `Question 3: Is employment stable?`,
+              explain: `Small loan amount is OK. Now we check <strong>employment stability</strong>.<br><br>Sarah's employment: <span class="action">${applicant.employed ? 'Stable ✓' : 'Unstable ✗'}</span><br><br>${stable ? `<span class="action">YES — Employment stable ✓</span> → Small loan can be approved!` : `<span class="warning">NO — Unstable income ✗</span> → Too risky.`}`,
+              stats: [{ val: applicant.employed ? 'Stable' : 'Unstable', lbl: 'Employment' }, { val: stable ? 'YES ✓' : 'NO ✗', lbl: 'Answer' }],
+            });
+            allSteps.push({
+              revealed: new Set(['root', 'n2', 'n5', stable ? 'n9' : 'n10']), active: stable ? 'n9' : 'n10',
+              path: ['root', 'n2', 'n5', stable ? 'n9' : 'n10'], decision: true,
+              title: stable ? '✅ Decision: Small Loan Approved!' : '❌ Decision: Rejected',
+              explain: stable
+                ? `<span class="action">DECISION: Small Loan Approved!</span><br><br>Sarah gets her £${applicant.loanAmount.toLocaleString()} loan because:<br>• Small amount (lower risk)<br>• Stable employment<br><br><em>Even with lower credit, a small loan with stable income is acceptable.</em>`
+                : `<span class="warning">DECISION: Rejected</span><br>Unstable employment + low credit = too risky.`,
+              success: stable,
+              stats: [{ val: stable ? 'Approved ✅' : 'Rejected ❌', lbl: 'Decision' }, { val: '3', lbl: 'Questions asked' }],
+            });
+          } else {
+            allSteps.push({
+              revealed: new Set(['root', 'n2', 'n6']), active: 'n6', path: ['root', 'n2', 'n6'], decision: true,
+              title: '❌ Decision: Rejected (High Risk)',
+              explain: `<span class="warning">DECISION: Rejected.</span><br><br>Low credit score + large loan = too risky for the bank.<br><br><em>The bank cannot approve a large loan when the credit score indicates poor repayment history.</em>`,
+              stats: [{ val: 'Rejected ❌', lbl: 'Decision' }, { val: '2', lbl: 'Questions asked' }],
+            });
+          }
+        } else {
+          // income check
+          const goodIncome = applicant.income > 30000;
+          allSteps.push({
+            revealed: new Set(['root', 'n1']), active: 'n1', path: ['root', 'n1'],
+            title: `Question 2: Income > £30,000?`,
+            explain: `Credit score is good! Now we check <strong>income</strong>.<br><br>Sarah's income: <span class="action">£${applicant.income.toLocaleString()}</span><br><br>${goodIncome ? `<span class="action">YES — £${applicant.income} > £30,000 ✓</span> → Looking good!` : `<span class="warning">NO — Income is too low ✗</span> → Reject.`}`,
+            stats: [{ val: '£' + applicant.income.toLocaleString(), lbl: 'Income' }, { val: '£30k', lbl: 'Threshold' }, { val: goodIncome ? 'YES ✓' : 'NO ✗', lbl: 'Answer' }],
+          });
+          if (goodIncome) {
+            allSteps.push({
+              revealed: new Set(['root', 'n1', 'n3']), active: 'n3', path: ['root', 'n1', 'n3'],
+              title: 'Question 3: Existing debts?',
+              explain: `Good credit and good income. Final check: <strong>existing debts</strong>.<br><br>Sarah's debts: <span class="action">${applicant.debts ? 'Yes — has existing debts' : 'No debts ✓'}</span><br><br>${applicant.debts ? `<span class="warning">YES — has debts</span> → Conditional approval.` : `<span class="action">NO — debt-free ✓</span> → Full approval!`}`,
+              stats: [{ val: applicant.debts ? 'Yes' : 'No', lbl: 'Has Debts' }, { val: applicant.debts ? 'Conditional' : 'Full OK', lbl: 'Likely outcome' }],
+            });
+            allSteps.push({
+              revealed: new Set(['root', 'n1', 'n3', applicant.debts ? 'n7' : 'n8']), active: applicant.debts ? 'n7' : 'n8',
+              path: ['root', 'n1', 'n3', applicant.debts ? 'n7' : 'n8'], decision: true,
+              title: applicant.debts ? '⚠️ Conditional Approval' : '✅ Fully Approved!',
+              explain: applicant.debts
+                ? `<span class="highlight">DECISION: Conditional Approval</span><br><br>Good credit + good income, but existing debts mean we add conditions.<br><br><em>Sarah can have the loan but with higher interest rate as a safety measure.</em>`
+                : `<span class="action">DECISION: Fully Approved! ✅</span><br><br>Sarah passes all checks:<br>• ✓ Credit score > 700<br>• ✓ Income > £30k<br>• ✓ No existing debts<br><br><em>The decision tree quickly found the right answer in just 3 questions!</em>`,
+              success: true,
+              stats: [{ val: applicant.debts ? 'Conditional ⚠️' : 'Approved ✅', lbl: 'Decision' }, { val: '3', lbl: 'Questions' }, { val: 'Decision Tree', lbl: 'Method' }],
+            });
+          } else {
+            allSteps.push({
+              revealed: new Set(['root', 'n1', 'n4']), active: 'n4', path: ['root', 'n1', 'n4'], decision: true,
+              title: '❌ Rejected: Income Too Low',
+              explain: `<span class="warning">DECISION: Rejected.</span><br><br>Even though credit score is fine, the income is too low to safely repay the loan.`,
+              stats: [{ val: 'Rejected ❌', lbl: 'Decision' }, { val: '2', lbl: 'Questions' }],
+            });
+          }
+        }
+        return allSteps;
+      }
+
+      function getAllNodes(node, list = []) { list.push(node); if (node.yes) getAllNodes(node.yes, list); if (node.no) getAllNodes(node.no, list); return list; }
+
+      function drawDT(s) {
+        bg();
+        const W = canvas.width, H = canvas.height;
+        const allN = getAllNodes(tree);
+        const { revealed = new Set(), active, path = [] } = s;
+        const pathSet = new Set(path);
+        const R = Math.min(W, H) * 0.045;
+
+        function drawEdges(node) {
+          if (!revealed.has(node.id)) return;
+          if (node.yes && revealed.has(node.yes.id)) {
+            const x1 = node.x * W, y1 = node.y * H, x2 = node.yes.x * W, y2 = node.yes.y * H;
+            const isPath = pathSet.has(node.id) && pathSet.has(node.yes.id);
+            drawEdgeLine(x1, y1, x2, y2, isPath ? '#4ade80' : '#94a3b8', isPath ? 3 : 1.5);
+            const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+            pill('YES', mx - 20, my, isPath ? '#4ade80' : '#475569');
+          }
+          if (node.no && revealed.has(node.no.id)) {
+            const x1 = node.x * W, y1 = node.y * H, x2 = node.no.x * W, y2 = node.no.y * H;
+            const isPath = pathSet.has(node.id) && pathSet.has(node.no.id);
+            drawEdgeLine(x1, y1, x2, y2, isPath ? '#f87171' : '#94a3b8', isPath ? 3 : 1.5);
+            const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+            pill('NO', mx + 20, my, isPath ? '#f87171' : '#475569');
+          }
+          if (node.yes) drawEdges(node.yes);
+          if (node.no) drawEdges(node.no);
+        }
+
+        function drawNodes(node) {
+          if (!revealed.has(node.id)) return;
+          const x = node.x * W, y = node.y * H;
+          const isActive = node.id === active;
+          const isPath = pathSet.has(node.id);
+          if (isActive) {
+            ctx.beginPath(); ctx.arc(x, y, R + 10, 0, Math.PI * 2);
+            ctx.fillStyle = clr('#fb923c', .2); ctx.fill();
+          }
+          const fill = node.type === 'L' ? clr(node.color || '#22d3ee', .15) : isActive ? '#fed7aa' : isPath ? '#dcfce7' : '#f1f5f9';
+          const border = node.type === 'L' ? (node.color || '#22d3ee') : isActive ? '#ea580c' : isPath ? '#7c3aed' : '#94a3b8';
+          if (node.type === 'D' || node.id === 'root') {
+            roundRect(x - R, y - R, 2 * R, 2 * R, 8, fill, border, isActive ? 3 : 2);
+          } else {
+            circle(x, y, R, fill, border, 2);
+          }
+          const lines = node.text.split('\n');
+          ctx.font = `700 ${lines.length > 1 ? 10 : 11}px 'Nunito',sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillStyle = isActive ? '#c2410c' : node.type === 'L' ? '#1e293b' : '#1e293b';
+          if (lines.length > 1) { ctx.fillText(lines[0], x, y - 7); ctx.fillText(lines[1], x, y + 7); }
+          else ctx.fillText(node.text, x, y);
+          if (node.yes) drawNodes(node.yes);
+          if (node.no) drawNodes(node.no);
+        }
+
+        drawEdges(tree); drawNodes(tree);
+
+        // Applicant card
+        const cx = W * .82, cy = H * .55, cw = W * .17, ch = 180;
+        roundRect(cx, cy, cw, ch, 12, '#f0f4f8', '#94a3b8', 1.5);
+        label("Sarah's Profile", cx + cw / 2, cy + 16, 12, '#0369a1', 'center', 'middle', true);
+        const info = [
+          { k: 'Credit', v: applicant.creditScore, ok: applicant.creditScore > 700 },
+          { k: 'Income', v: '£' + applicant.income.toLocaleString(), ok: applicant.income > 30000 },
+          { k: 'Debts', v: applicant.debts ? 'Yes' : 'No', ok: !applicant.debts },
+          { k: 'Loan', v: '£' + applicant.loanAmount.toLocaleString(), ok: applicant.loanAmount < 5000 },
+          { k: 'Job', v: applicant.employed ? 'Stable' : 'No', ok: applicant.employed },
+        ];
+        info.forEach((item, i) => {
+          const iy = cy + 40 + i * 26;
+          label(item.k + ':', cx + 10, iy, 11, '#475569', 'left');
+          label(item.v, cx + cw - 10, iy, 11, item.ok ? '#15803d' : '#b91c1c', 'right');
+        });
+
+        // Legend
+        label('□ = Decision node  ○ = Leaf (outcome)', W / 2, H - 16, 11, '#475569');
+      }
+
+      function init() {
+        setHeader(scenario.tag, scenario.title, scenario.desc);
+        setAlgoExplainer(EXPLAINER_TITLE, EXPLAINER_BODY);
+        setLegend([{ color: '#475569', sq: true, label: 'Decision node (question)' }, { color: '#4ade80', label: 'Approved outcome' }, { color: '#f87171', label: 'Rejected outcome' }, { color: '#fbbf24', label: 'Conditional' }, { color: '#4ade80', label: 'Current path (YES)' }, { color: '#f87171', label: 'Current path (NO)' }]);
+        steps = buildSteps(); stepI = 0; clearHistory();
+        showStep({ ...steps[0], index: 0 }); setStateCards(steps[0].stats || []); drawDT(steps[0]);
+        updateBtns(stepI, steps.length);
+      }
+      function nextStep() {
+        if (stepI >= steps.length - 1) return;
+        addHistory({ ...steps[stepI], index: stepI }); stepI++;
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); drawDT(s);
+        updateBtns(stepI, steps.length);
+      }
+      function prevStep() {
+        if (stepI <= 0) return; stepI--;
+        const el = document.getElementById('stepHistory'); el.innerHTML = '';
+        for (let i = 0; i < stepI; i++) addHistory({ ...steps[i], index: i });
+        const s = steps[stepI]; showStep({ ...s, index: stepI }); setStateCards(s.stats || []); drawDT(s);
+        updateBtns(stepI, steps.length);
+      }
+      return { init, nextStep, prevStep, draw: () => drawDT(steps[stepI] || steps[0]) };
+    })();
+
+    // ════════════════════════════════════════════════════════
+    // ALGO MAP & TAB WIRING
+    // ════════════════════════════════════════════════════════
+    const ALGOS = {
+      bfs: BFS_ALGO,
+      dfs: DFS_ALGO,
+      dfdb: DFDB_ALGO,
+      greedy: GREEDY_ALGO,
+      astar: ASTAR_ALGO,
+      tsp: TSP_ALGO,
+      puzzle: PUZZLE_ALGO,
+      decision: DECISION_ALGO,
+    };
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const id = tab.dataset.tab;
+        resizeCanvas();
+        if (ALGOS[id]) {
+          currentAlgo = ALGOS[id];
+          ALGOS[id].init();
+          document.getElementById('btnNext').disabled = false;
+          document.getElementById('btnBack').disabled = true;
+        }
+      });
+    });
+
+    document.getElementById('btnNext').addEventListener('click', () => {
+      if (currentAlgo && currentAlgo.nextStep) currentAlgo.nextStep();
+    });
+
+    document.getElementById('btnBack').addEventListener('click', () => {
+      if (currentAlgo && currentAlgo.prevStep) currentAlgo.prevStep();
+    });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      if (currentAlgo && currentAlgo.init) {
+        currentAlgo.init();
+        document.getElementById('btnNext').disabled = false;
+        document.getElementById('btnBack').disabled = true;
+      }
+    });
+
+    // Init
+    resizeCanvas();
+    currentAlgo = BFS_ALGO;
+    BFS_ALGO.init();
+  </script>
+</body>
+
+</html>

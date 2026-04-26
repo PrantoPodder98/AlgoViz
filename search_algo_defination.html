@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search Algorithms — Exam Study Guide</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&family=Nunito:wght@400;600;700&display=swap');
+
+:root {
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text2: #334155;
+  --text3: #64748b;
+  --cyan: #0369a1;
+  --green: #15803d;
+  --orange: #c2410c;
+  --red: #b91c1c;
+  --purple: #6d28d9;
+  --yellow: #92400e;
+  --blue: #1d4ed8;
+  --cyan-bg: #e0f2fe;
+  --green-bg: #dcfce7;
+  --orange-bg: #fff7ed;
+  --red-bg: #fef2f2;
+  --purple-bg: #ede9fe;
+  --yellow-bg: #fef3c7;
+  --blue-bg: #dbeafe;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ── LAYOUT ── */
+.page-wrap { max-width: 1000px; margin: 0 auto; padding: 32px 20px 80px; }
+
+/* ── TOP HEADER ── */
+.doc-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-bottom: 32px;
+  border-left: 5px solid var(--cyan);
+}
+.doc-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--cyan);
+  margin-bottom: 6px;
+}
+.doc-header .subtitle {
+  font-size: 13px;
+  color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+}
+.doc-header .desc {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--text2);
+  max-width: 700px;
+}
+
+/* ── TABLE OF CONTENTS ── */
+.toc {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
+}
+.toc h2 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px; }
+.toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
+.toc-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 12px; border-radius: 8px;
+  border: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+  color: var(--text2);
+  text-decoration: none;
+  transition: all .15s;
+}
+.toc-item:hover { background: var(--cyan-bg); border-color: var(--cyan); color: var(--cyan); }
+.toc-num { font-size: 10px; color: var(--text3); min-width: 16px; }
+
+/* ── QUICK REFERENCE TABLE ── */
+.quick-ref {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+.section-title {
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800;
+  color: var(--text3); text-transform: uppercase; letter-spacing: .08em;
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+table.ref-table { width: 100%; border-collapse: collapse; }
+table.ref-table th {
+  background: var(--bg);
+  padding: 10px 14px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+  color: var(--text3); text-transform: uppercase; letter-spacing: .05em;
+  text-align: left; border-bottom: 2px solid var(--border);
+}
+table.ref-table td {
+  padding: 10px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+table.ref-table tr:last-child td { border-bottom: none; }
+table.ref-table tr:hover td { background: #f8fafc; }
+.yes { color: var(--green); font-weight: 700; }
+.no { color: var(--red); font-weight: 700; }
+.maybe { color: var(--orange); font-weight: 700; }
+.tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-family:'JetBrains Mono',monospace; font-weight:600; }
+.tag-cyan { background:var(--cyan-bg); color:var(--cyan); }
+.tag-green { background:var(--green-bg); color:var(--green); }
+.tag-red { background:var(--red-bg); color:var(--red); }
+.tag-purple { background:var(--purple-bg); color:var(--purple); }
+.tag-orange { background:var(--orange-bg); color:var(--orange); }
+.tag-yellow { background:var(--yellow-bg); color:var(--yellow); }
+
+/* ── ALGO SECTION ── */
+.algo-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 32px;
+  overflow: hidden;
+}
+.algo-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  border-left: 5px solid var(--cyan);
+}
+.algo-header.green  { border-left-color: var(--green); }
+.algo-header.orange { border-left-color: var(--orange); }
+.algo-header.red    { border-left-color: var(--red); }
+.algo-header.purple { border-left-color: var(--purple); }
+.algo-header.yellow { border-left-color: var(--yellow); }
+.algo-header.blue   { border-left-color: var(--blue); }
+.algo-tag {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--text3); margin-bottom: 4px;
+}
+.algo-header h2 {
+  font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800;
+  margin-bottom: 4px;
+}
+.algo-header .scenario {
+  font-size: 13px; color: var(--text2);
+}
+
+.algo-body { padding: 0; }
+
+/* ── GRAPH BOX ── */
+.graph-box {
+  margin: 20px 24px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.graph-box h4 {
+  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 800;
+  color: var(--text3); text-transform: uppercase; letter-spacing: .07em;
+  margin-bottom: 10px;
+}
+.graph-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.8;
+  white-space: pre;
+}
+
+/* ── STEPS ── */
+.steps-container { padding: 0 24px 20px; }
+.steps-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600;
+  color: var(--text3); text-transform: uppercase; letter-spacing: .1em;
+  margin: 16px 0 10px;
+}
+.step {
+  display: flex; gap: 14px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  position: relative;
+}
+.step-badge {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+  color: var(--text3);
+}
+.step-content { flex: 1; }
+.step-title {
+  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+  color: var(--text); margin-bottom: 4px;
+}
+.step-desc { font-size: 13px; color: var(--text2); line-height: 1.65; }
+.step-state {
+  margin-top: 7px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 10px;
+}
+.step.highlight {
+  background: var(--cyan-bg);
+  border-color: var(--cyan);
+}
+.step.highlight .step-badge {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  color: #fff;
+}
+.step.success {
+  background: var(--green-bg);
+  border-color: var(--green);
+}
+.step.success .step-badge {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+.step.warn {
+  background: var(--orange-bg);
+  border-color: var(--orange);
+}
+
+/* ── ANSWER BOX ── */
+.answer-box {
+  margin: 16px 24px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  border-left: 4px solid;
+}
+.answer-box.correct { background: var(--green-bg); border-left-color: var(--green); }
+.answer-box.warn    { background: var(--orange-bg); border-left-color: var(--orange); }
+.answer-box.info    { background: var(--cyan-bg); border-left-color: var(--cyan); }
+.answer-box.key     { background: var(--purple-bg); border-left-color: var(--purple); }
+.answer-box h4 {
+  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .07em;
+  margin-bottom: 6px;
+}
+.answer-box.correct h4 { color: var(--green); }
+.answer-box.warn h4    { color: var(--orange); }
+.answer-box.info h4    { color: var(--cyan); }
+.answer-box.key h4     { color: var(--purple); }
+.answer-box p { font-size: 13px; color: var(--text2); line-height: 1.7; }
+
+/* ── PATH CHAIN ── */
+.path-chain {
+  display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px;
+  margin: 6px 0;
+}
+.pnode {
+  display: inline-block;
+  padding: 3px 10px; border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+  border: 1.5px solid;
+}
+.pnode.start  { background: var(--blue-bg); border-color: var(--blue); color: var(--blue); }
+.pnode.goal   { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+.pnode.normal { background: var(--bg); border-color: var(--border); color: var(--text2); }
+.pnode.active { background: var(--orange-bg); border-color: var(--orange); color: var(--orange); }
+.parrow { font-size: 14px; color: var(--text3); }
+.cost-badge {
+  display: inline-block;
+  padding: 1px 7px; border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+  background: var(--yellow-bg); color: var(--yellow); border: 1px solid #fbbf24;
+}
+
+/* ── TWO COLUMN ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 24px; }
+.col-box {
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.col-box h4 {
+  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 800;
+  color: var(--text3); text-transform: uppercase; letter-spacing: .07em;
+  margin-bottom: 8px;
+}
+.col-box ul { padding-left: 18px; }
+.col-box li { font-size: 13px; color: var(--text2); margin-bottom: 3px; line-height: 1.5; }
+
+/* ── EXAM TIPS ── */
+.exam-tip {
+  margin: 0 24px 16px;
+  padding: 12px 16px;
+  background: #fef9c3;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  font-size: 13px; color: #78350f;
+}
+.exam-tip strong { color: #92400e; }
+
+/* ── COMPARISON TABLE ── */
+.compare-row { display: grid; grid-template-columns: 160px 1fr 1fr 1fr; gap: 0; }
+.compare-row.header { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; }
+.compare-cell { padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 13px; border-right: 1px solid var(--border); }
+.compare-cell:first-child { font-weight: 700; color: var(--text2); background: var(--bg); }
+
+/* ── DIVIDER ── */
+.section-sep { height: 1px; background: var(--border); margin: 0 24px 4px; }
+
+/* ── FORMULA BOX ── */
+.formula {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 8px 0;
+  color: var(--text2);
+}
+
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<!-- ═══════════════════════════════════════════ HEADER -->
+<div class="doc-header">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:6px;">🎓 EXAM STUDY GUIDE — Same problems as the AlgoViz visualiser</div>
+  <h1>Search Algorithms — Written Step-by-Step</h1>
+  <div class="subtitle">BFS · DFS · DFDB · Greedy · A* · TSP · 8-Puzzle · Decision Tree</div>
+  <div class="desc">This guide uses the <strong>exact same graphs, scenarios and problems</strong> as the interactive HTML visualiser. Use it to practise writing out solutions for exams — where you need to show your working clearly and explain <em>why</em> each decision is made.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ TOC -->
+<div class="toc">
+  <h2>Contents</h2>
+  <div class="toc-grid">
+    <a class="toc-item" href="#bfs"><span class="toc-num">01</span>BFS — Rescue Mission</a>
+    <a class="toc-item" href="#dfs"><span class="toc-num">02</span>DFS — Cave Network</a>
+    <a class="toc-item" href="#dfdb"><span class="toc-num">03</span>DFDB — Building Search</a>
+    <a class="toc-item" href="#greedy"><span class="toc-num">04</span>Greedy — Hospital</a>
+    <a class="toc-item" href="#astar"><span class="toc-num">05</span>A* — GPS Navigation</a>
+    <a class="toc-item" href="#tsp"><span class="toc-num">06</span>TSP — Delivery Route</a>
+    <a class="toc-item" href="#puzzle"><span class="toc-num">07</span>8-Puzzle — BFS Solver</a>
+    <a class="toc-item" href="#decision"><span class="toc-num">08</span>Decision Tree — Loan</a>
+    <a class="toc-item" href="#cheatsheet"><span class="toc-num">09</span>Quick Cheat Sheet</a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ QUICK REF -->
+<div class="quick-ref">
+  <div class="section-title">Algorithm Comparison — at a glance</div>
+  <table class="ref-table">
+    <tr>
+      <th>Algorithm</th><th>Data Structure</th><th>Explores in order of</th><th>Optimal?</th><th>Complete?</th><th>Handles weights?</th>
+    </tr>
+    <tr>
+      <td><strong>BFS</strong></td>
+      <td><span class="tag tag-cyan">Queue (FIFO)</span></td>
+      <td>Fewest hops from start (depth)</td>
+      <td class="yes">YES ✓ (unweighted)</td>
+      <td class="yes">YES ✓</td>
+      <td class="no">NO ✗</td>
+    </tr>
+    <tr>
+      <td><strong>DFS</strong></td>
+      <td><span class="tag tag-orange">Stack (LIFO)</span></td>
+      <td>Deepest unexplored branch first</td>
+      <td class="no">NO ✗</td>
+      <td class="yes">YES ✓</td>
+      <td class="no">NO ✗</td>
+    </tr>
+    <tr>
+      <td><strong>DFDB</strong></td>
+      <td><span class="tag tag-orange">Stack (LIFO)</span></td>
+      <td>Depth-first, up to limit L</td>
+      <td class="no">NO ✗</td>
+      <td class="maybe">ONLY if goal ≤ L</td>
+      <td class="no">NO ✗</td>
+    </tr>
+    <tr>
+      <td><strong>Greedy</strong></td>
+      <td><span class="tag tag-green">Priority Queue</span></td>
+      <td>Lowest h(n) (looks nearest)</td>
+      <td class="no">NO ✗</td>
+      <td class="no">NO ✗</td>
+      <td class="no">Ignores them</td>
+    </tr>
+    <tr>
+      <td><strong>A*</strong></td>
+      <td><span class="tag tag-purple">Priority Queue</span></td>
+      <td>Lowest f(n) = g(n) + h(n)</td>
+      <td class="yes">YES ✓ (admissible h)</td>
+      <td class="yes">YES ✓</td>
+      <td class="yes">YES ✓</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ 1. BFS -->
+<div class="algo-section" id="bfs">
+  <div class="algo-header">
+    <div class="algo-tag">01 · Unweighted Graph · Queue · Optimal</div>
+    <h2>BFS — Breadth-First Search</h2>
+    <div class="scenario">🚨 City Rescue Mission — Fire Station (S) must reach Rescue Site (★) in fewest streets</div>
+  </div>
+  <div class="algo-body">
+
+    <div class="answer-box info">
+      <h4>The Core Idea</h4>
+      <p>BFS uses a <strong>Queue (FIFO)</strong>. It explores all nodes at distance 1 before distance 2, then distance 3 — like ripples spreading outward from a stone dropped in water. Because it always processes closer nodes before farther ones, <strong>the first time it reaches any node is via the shortest possible path.</strong></p>
+    </div>
+
+    <div class="graph-box">
+      <h4>Graph — 13 nodes, unweighted</h4>
+      <div class="graph-mono">Nodes: S, A, B, C, D, E, F, G, H, I, J, K, ★
+
+Adjacency list:
+  S → A, B, D
+  A → S, C, D, F
+  B → S, E, H
+  C → A, F
+  D → S, A, G, E
+  E → B, D, H
+  F → A, C, I, J
+  G → D, J, K
+  H → B, E, K
+  I → F, ★
+  J → F, G, ★
+  K → G, H, ★
+
+All edges have equal cost (1 hop each)</div>
+    </div>
+
+    <div class="steps-container">
+      <div class="steps-label">Step-by-step execution</div>
+
+      <div class="step">
+        <div class="step-badge">0</div>
+        <div class="step-content">
+          <div class="step-title">Initialise — Push S onto Queue</div>
+          <div class="step-desc">Mark S as visited. Enqueue S. Set parent[S] = null.</div>
+          <div class="step-state">Queue: [S] | Visited: {S} | Depth: 0</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">1</div>
+        <div class="step-content">
+          <div class="step-title">Dequeue S (depth 0) → Discover A, B, D</div>
+          <div class="step-desc">Pop S from the front of the queue. Check neighbours: A, B, D — all unvisited. Mark them visited, set parent[A]=S, parent[B]=S, parent[D]=S, and enqueue them.</div>
+          <div class="step-state">Queue: [A, B, D] | Visited: {S,A,B,D} | Depth: 1</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">2</div>
+        <div class="step-content">
+          <div class="step-title">Dequeue A (depth 1) → Discover C, F</div>
+          <div class="step-desc">Neighbours of A: S (visited), C (new), D (visited), F (new). Add C and F. parent[C]=A, parent[F]=A.</div>
+          <div class="step-state">Queue: [B, D, C, F] | Visited: {S,A,B,D,C,F}</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">3</div>
+        <div class="step-content">
+          <div class="step-title">Dequeue B (depth 1) → Discover E, H</div>
+          <div class="step-desc">Neighbours: S (visited), E (new), H (new). parent[E]=B, parent[H]=B.</div>
+          <div class="step-state">Queue: [D, C, F, E, H]</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">4</div>
+        <div class="step-content">
+          <div class="step-title">Dequeue D (depth 1) → Discover G</div>
+          <div class="step-desc">Neighbours: S, A (both visited), G (new), E (already queued/visited). Add G. parent[G]=D.</div>
+          <div class="step-state">Queue: [C, F, E, H, G]</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">5</div>
+        <div class="step-content">
+          <div class="step-title">Dequeue C, F, E, H, G (depth 2) — continue discovering</div>
+          <div class="step-desc">Dequeue C → discovers nothing new. Dequeue F → discovers I and J. parent[I]=F, parent[J]=F. Dequeue E, H, G → discover K. parent[K]=G or H (first arrival wins).</div>
+          <div class="step-state">Queue: [I, J, K] | Depth: 3 nodes now known</div>
+        </div>
+      </div>
+
+      <div class="step highlight">
+        <div class="step-badge">6</div>
+        <div class="step-content">
+          <div class="step-title">Dequeue I (depth 3) → Discovers ★!</div>
+          <div class="step-desc">Neighbour of I includes ★. First time ★ is reached → we have found the goal! parent[★]=I. Stop.</div>
+          <div class="step-state">★ found at depth 3!</div>
+        </div>
+      </div>
+
+      <div class="step success">
+        <div class="step-badge">✓</div>
+        <div class="step-content">
+          <div class="step-title">Trace back parent pointers → Shortest Path</div>
+          <div class="step-desc">Walk back: ★ ← I ← F ← A ← S. Reverse to get forward path.</div>
+          <div class="path-chain">
+            <span class="pnode start">S</span><span class="parrow">→</span>
+            <span class="pnode normal">A</span><span class="parrow">→</span>
+            <span class="pnode normal">F</span><span class="parrow">→</span>
+            <span class="pnode normal">I</span><span class="parrow">→</span>
+            <span class="pnode goal">★</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="answer-box correct">
+      <h4>Why is S → A → F → I → ★ the shortest path? (Exam answer)</h4>
+      <p>This path has <strong>4 hops</strong>. BFS guarantees this is optimal for an unweighted graph because:<br><br>
+      <strong>(1)</strong> BFS processes all depth-1 nodes (A, B, D) before any depth-2 node.<br>
+      <strong>(2)</strong> It processes all depth-2 nodes (C, F, E, H, G) before any depth-3 node.<br>
+      <strong>(3)</strong> The <em>first time</em> ★ is discovered (by I at depth 3), that is the minimum possible depth — because every shorter path (depth 1 or 2) has already been fully explored and ★ was not found there.<br>
+      <strong>(4)</strong> Parent pointers record which node discovered each node first, giving us the exact route that achieved this minimum depth.<br><br>
+      There is no path of length 3 from S to ★ in this graph. BFS proves this by exhausting all depth-3 discoverable nodes before finding ★.</p>
+    </div>
+
+    <div class="exam-tip">
+      <strong>📝 Exam tip:</strong> In BFS questions, always write: (1) queue state after each dequeue, (2) which node was dequeued, (3) which new nodes were added. At the end, trace the parent pointer chain backwards from goal to start, then reverse it.
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ 2. DFS -->
+<div class="algo-section" id="dfs">
+  <div class="algo-header orange">
+    <div class="algo-tag">02 · Unweighted Graph · Stack · NOT Optimal</div>
+    <h2>DFS — Depth-First Search</h2>
+    <div class="scenario">🧭 Cave Network — Explorer enters at S, seeks Treasure (★)</div>
+  </div>
+  <div class="algo-body">
+
+    <div class="answer-box warn">
+      <h4>The Core Idea</h4>
+      <p>DFS uses a <strong>Stack (LIFO)</strong>. It dives as deep as possible along one branch before backtracking. It finds <em>a</em> path, but does <strong>NOT guarantee the shortest path</strong> — it commits to one direction greedily without checking alternatives first.</p>
+    </div>
+
+    <div class="graph-box">
+      <h4>Graph — 13 nodes, unweighted</h4>
+      <div class="graph-mono">Nodes: S, A, B, C, D, E, F, G, H, I, J, K, ★
+
+Adjacency list:
+  S → A, B, D        A → S, C, D, G
+  B → S, E, F        C → A, G
+  D → S, A, H        E → B, H, I
+  F → B, I           G → A, C, J
+  H → D, E, J, K     I → E, F, K
+  J → G, H, ★        K → H, I, ★</div>
+    </div>
+
+    <div class="steps-container">
+      <div class="steps-label">Step-by-step execution (DFS pushes neighbours in reverse so first logical neighbour is on top)</div>
+
+      <div class="step">
+        <div class="step-badge">0</div>
+        <div class="step-content">
+          <div class="step-title">Initialise — Push S onto Stack</div>
+          <div class="step-desc">Stack = [S]. parent[S] = null.</div>
+          <div class="step-state">Stack (top→): [S]</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">1</div>
+        <div class="step-content">
+          <div class="step-title">Pop S → Push D, B, A (A on top)</div>
+          <div class="step-desc">Mark S visited. Neighbours: A, B, D. Push in reverse order → D, B, A. A is on top and explored next. parent[A]=S, parent[B]=S, parent[D]=S.</div>
+          <div class="step-state">Stack: [D, B, A] → next: A</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">2</div>
+        <div class="step-content">
+          <div class="step-title">Pop A → Push G (C and D skipped/visited)</div>
+          <div class="step-desc">Mark A visited. Neighbours: S (visited), C, D (visited), G. Push C then G. G is now on top. parent[G]=A, parent[C]=A.</div>
+          <div class="step-state">Stack: [D, B, C, G] → next: G</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">3</div>
+        <div class="step-content">
+          <div class="step-title">Pop G → Push J (C already queued)</div>
+          <div class="step-desc">Mark G visited. Neighbours: A (visited), C (already in stack), J. Push J. parent[J]=G.</div>
+          <div class="step-state">Stack: [D, B, C, J] → next: J</div>
+        </div>
+      </div>
+
+      <div class="step highlight">
+        <div class="step-badge">4</div>
+        <div class="step-content">
+          <div class="step-title">Pop J → Discovers ★!</div>
+          <div class="step-desc">Mark J visited. Neighbours: G (visited), H, ★. ★ is found! parent[★]=J. Stop immediately.</div>
+          <div class="step-state">★ found!</div>
+        </div>
+      </div>
+
+      <div class="step success">
+        <div class="step-badge">✓</div>
+        <div class="step-content">
+          <div class="step-title">Trace back parent pointers</div>
+          <div class="step-desc">★ ← J ← G ← A ← S. Reversed:</div>
+          <div class="path-chain">
+            <span class="pnode start">S</span><span class="parrow">→</span>
+            <span class="pnode normal">A</span><span class="parrow">→</span>
+            <span class="pnode normal">G</span><span class="parrow">→</span>
+            <span class="pnode normal">J</span><span class="parrow">→</span>
+            <span class="pnode goal">★</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="answer-box correct">
+      <h4>Is S → A → G → J → ★ the shortest path? — Full explanation</h4>
+      <p>Yes — in this particular graph, <strong>4 hops is actually the minimum possible</strong>. We can verify: the only paths from S to ★ require at least 4 edges (S is separated from ★ by 4 levels of the graph). So DFS happened to find the shortest path here — <em>by coincidence</em>, not by design.<br><br>
+      <strong>However — DFS does NOT guarantee this in general:</strong><br>
+      <strong>(1)</strong> DFS chose S→A because A was the first neighbour pushed. It went deep: A→G→J→★. This route happened to be 4 hops.<br>
+      <strong>(2)</strong> DFS never checked S→B or S→D before finding ★. If ★ had been reachable via S→D→H→★ (3 hops), DFS would have missed it and reported the longer path.<br>
+      <strong>(3)</strong> In an exam: say "DFS found path S→A→G→J→★ (4 hops). This is the minimum depth in this graph, but DFS cannot guarantee optimality in general — it committed to the A branch without exploring alternatives."</p>
+    </div>
+
+    <div class="answer-box key">
+      <h4>BFS vs DFS — Key difference for exam</h4>
+      <p><strong>BFS</strong>: explores level by level → guaranteed shortest hop count → uses more memory (whole frontier in queue).<br>
+      <strong>DFS</strong>: dives deep first → finds a path quickly → uses less memory (only current path on stack) → NOT optimal — may find a longer path if it picks the wrong branch first.</p>
+    </div>
+
+    <div class="exam-tip">
+      <strong>📝 Exam tip:</strong> In DFS questions, write the stack state after every push/pop. Note which nodes you skip because they're "already visited." At the end, say explicitly: "DFS found path X. This is NOT guaranteed to be the shortest path because DFS does not explore all paths at each depth level before going deeper."
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ 3. DFDB -->
+<div class="algo-section" id="dfdb">
+  <div class="algo-header red">
+    <div class="algo-tag">03 · Unweighted · Stack · Depth Limit = 3</div>
+    <h2>DFDB — Depth-Limited Search</h2>
+    <div class="scenario">🏢 Building Search — Security starts at Reception (S), finds Child (★), limit = 3 floors</div>
+  </div>
+  <div class="algo-body">
+
+    <div class="answer-box info">
+      <h4>The Core Idea</h4>
+      <p>DFDB is DFS with a <strong>hard depth cutoff</strong>. Any node at depth &gt; L is <strong>pruned</strong> — we simply refuse to go there. This is useful when we know the goal must be "nearby." The trade-off: if the goal is deeper than L, we fail to find it entirely. IDDFS (Iterative Deepening) solves this by running DFDB with L = 0, 1, 2, 3 … until found.</p>
+    </div>
+
+    <div class="graph-box">
+      <h4>Graph — 12 nodes, depth limit L = 3</h4>
+      <div class="graph-mono">Nodes: S, W1A, W1B, W2A, W2B, W2C, W3A, W3B, W3C, W4A, W4B, ★
+
+Tree structure (depth):
+  S (d=0)
+  ├── W1A (d=1) ── W2A (d=2) ── W3A (d=3) ── W4A (d=4) [PRUNED]
+  │              └── W2B (d=2) ── W3A, W3B (d=3) ── W4B (d=4) [PRUNED]
+  │                                            └── ★ (d=4) [PRUNED from W3B]
+  └── W1B (d=1) ── W2B (d=2) ── W3B (d=3) ── ★ via W3B (depth 4) 
+                 └── W2C (d=2) ── W3C (d=3) ── ★ (depth 4 — PRUNED)
+
+Edges: S-W1A, S-W1B, W1A-W2A, W1A-W2B, W1B-W2B, W1B-W2C,
+       W2A-W3A, W2B-W3A, W2B-W3B, W2C-W3C,
+       W3A-W4A, W3B-W4B, W3B-★, W3C-★, W4A-★, W4B-★</div>
+    </div>
+
+    <div class="steps-container">
+      <div class="steps-label">Step-by-step execution with depth tracking</div>
+
+      <div class="step">
+        <div class="step-badge">0</div>
+        <div class="step-content">
+          <div class="step-title">Initialise — Stack = [(S, depth=0)]</div>
+          <div class="step-state">Stack: [(S,0)] | Pruned: 0</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">1–3</div>
+        <div class="step-content">
+          <div class="step-title">Explore S→W1A→W2B→W3B (depths 0,1,2,3)</div>
+          <div class="step-desc">Each node is within limit. Pop S (d=0) → push W1B(d=1), W1A(d=1). Pop W1A(d=1) → push W2B(d=2), W2A(d=2). Pop W2A(d=2) → push W3A(d=3). Pop W3A(d=3) — at limit, PRUNE W4A. Pop W2B(d=2) → push W3B(d=3), W3A (already visited).</div>
+          <div class="step-state">Pruned so far: W4A (and its subtree)</div>
+        </div>
+      </div>
+
+      <div class="step warn">
+        <div class="step-badge">4</div>
+        <div class="step-content">
+          <div class="step-title">⛔ PRUNE: W3B is at depth 3 — W4B and ★ would be depth 4 → skipped</div>
+          <div class="step-desc">We're at W3B (d=3). Neighbours are W4B and ★ — both would be at d=4 which exceeds limit=3. We do NOT explore them. This is pruning in action.</div>
+          <div class="step-state">Pruned: W4A, W4B, ★ (from W3B)</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">5</div>
+        <div class="step-content">
+          <div class="step-title">Continue via W1B → W2C → W3C</div>
+          <div class="step-desc">Pop W1B(d=1) → discover W2C(d=2). Pop W2C(d=2) → discover W3C(d=3). Pop W3C(d=3) → at limit. ★ is neighbour at d=4 → PRUNED.</div>
+          <div class="step-state">★ is pruned again from W3C route.</div>
+        </div>
+      </div>
+
+      <div class="step warn">
+        <div class="step-badge">!</div>
+        <div class="step-content">
+          <div class="step-title">DFDB FAILS — ★ is at depth 4, limit is 3</div>
+          <div class="step-desc">The child (★) is always connected to nodes at depth 4 (W3B, W3C, W4A, W4B). Since our limit is 3, DFDB cannot reach ★ and reports failure.</div>
+          <div class="step-state">Result: GOAL NOT FOUND within depth limit 3</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="answer-box warn">
+      <h4>Why DFDB fails here — and what to write in the exam</h4>
+      <p>The depth limit is 3, but ★ is only reachable at depth 4 (e.g. S→W1B→W2C→W3C→★). DFDB prunes everything beyond depth 3, so ★ is never expanded.<br><br>
+      <strong>In the exam:</strong> "DFDB with L=3 fails to find ★ because the shortest path to ★ requires 4 hops. All routes to ★ pass through depth-3 nodes (W3B, W3C), but ★ itself is at depth 4. The algorithm prunes it. To solve this, increase L to 4, or use Iterative Deepening DFS (IDDFS) which tries L=0, 1, 2, 3, 4, … automatically."</p>
+    </div>
+
+    <div class="exam-tip">
+      <strong>📝 Exam tip:</strong> When you show DFDB working, write the depth number next to each node: (S,0), (W1A,1), (W2B,2), (W3B,3). Mark PRUNED clearly when a node would exceed L. Count how many nodes were pruned vs. how many would have been explored without the limit.
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ 4. GREEDY -->
+<div class="algo-section" id="greedy">
+  <div class="algo-header green">
+    <div class="algo-tag">04 · Weighted Graph · Priority Queue · NOT Optimal</div>
+    <h2>Greedy Best-First Search</h2>
+    <div class="scenario">🏥 Hospital Emergency — Ambulance (S) must reach Hospital (★) fast</div>
+  </div>
+  <div class="algo-body">
+
+    <div class="answer-box info">
+      <h4>The Core Idea</h4>
+      <p>Greedy always picks the node with the <strong>lowest h(n)</strong> — the heuristic estimate of distance to goal. It <em>looks</em> at where the goal appears to be and greedily rushes toward it. It ignores actual travel cost (g). This makes it fast but unreliable — a node that looks close might require expensive roads to reach it.</p>
+    </div>
+
+    <div class="graph-box">
+      <h4>Graph — 12 nodes, weighted edges, with h(n) values</h4>
+      <div class="graph-mono">h(n) = estimated straight-line distance to hospital ★
+
+Node h-values:  S=14  A=10  B=11  C=7   D=8
+                E=12  F=5   G=4   H=9   I=3   J=2   ★=0
+
+Edges (with weights):
+  S-A:3   S-B:4   S-D:6
+  A-C:2   A-D:5
+  B-E:3   B-H:7
+  C-F:4   D-F:3   D-G:5
+  E-H:4   F-I:3   G-I:6   G-J:3   H-J:8
+  I-★:4   J-★:2</div>
+    </div>
+
+    <div class="steps-container">
+      <div class="steps-label">Greedy execution — always pick lowest h(n) from open list</div>
+
+      <div class="step">
+        <div class="step-badge">0</div>
+        <div class="step-content">
+          <div class="step-title">Start at S. Open list = [(S, h=14)]</div>
+          <div class="step-state">Open list sorted by h: [S(14)]</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">1</div>
+        <div class="step-content">
+          <div class="step-title">Expand S — neighbours A(h=10), B(h=11), D(h=8)</div>
+          <div class="step-desc">Add A, B, D to open list. Sort by h: D(8) &lt; A(10) &lt; B(11). Pick D next (lowest h).</div>
+          <div class="step-state">Open list: [D(8), A(10), B(11)] → pick D</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">2</div>
+        <div class="step-content">
+          <div class="step-title">Expand D — discovers F(h=5), G(h=4)</div>
+          <div class="step-desc">D's neighbours: S (visited), A (already open, keep), F (new, h=5), G (new, h=4). Add F and G. Sort: G(4) &lt; F(5) &lt; A(10) &lt; B(11). Pick G.</div>
+          <div class="step-state">Open list: [G(4), F(5), A(10), B(11)] → pick G</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">3</div>
+        <div class="step-content">
+          <div class="step-title">Expand G — discovers J(h=2)</div>
+          <div class="step-desc">G's neighbours: D (visited), I (new, h=3), J (new, h=2). Add both. Sort: J(2) &lt; I(3) &lt; F(5) &lt; A(10) &lt; B(11). Pick J.</div>
+          <div class="step-state">Open list: [J(2), I(3), F(5), A(10), B(11)] → pick J</div>
+        </div>
+      </div>
+
+      <div class="step highlight">
+        <div class="step-badge">4</div>
+        <div class="step-content">
+          <div class="step-title">Expand J — discovers ★ (h=0)!</div>
+          <div class="step-desc">J's neighbours: G (visited), H, ★ (h=0). ★ added with h=0 — lowest possible. Next pick = ★. Goal reached!</div>
+          <div class="step-state">★ found! parent[★]=J</div>
+        </div>
+      </div>
+
+      <div class="step success">
+        <div class="step-badge">✓</div>
+        <div class="step-content">
+          <div class="step-title">Traceback: ★ ← J ← G ← D ← S</div>
+          <div class="path-chain">
+            <span class="pnode start">S</span><span class="parrow">→</span>
+            <span class="pnode normal">D</span><span class="cost-badge">g=6</span><span class="parrow">→</span>
+            <span class="pnode normal">G</span><span class="cost-badge">g=11</span><span class="parrow">→</span>
+            <span class="pnode normal">J</span><span class="cost-badge">g=14</span><span class="parrow">→</span>
+            <span class="pnode goal">★</span><span class="cost-badge">g=16</span>
+          </div>
+          <div class="step-desc" style="margin-top:6px;">Total actual cost = 6 + 5 + 3 + 2 = <strong>16</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="answer-box warn">
+      <h4>Is S → D → G → J → ★ the optimal path? — Full explanation</h4>
+      <p>In this specific graph, the Greedy path S→D→G→J→★ has cost <strong>16</strong>. The true optimal is S→A→C→F→I→★ which also costs <strong>16</strong> (3+2+4+3+4). So Greedy <em>accidentally</em> found a path with optimal cost here.<br><br>
+      <strong>However — this is purely coincidental.</strong> Greedy is NOT optimal in general because:<br>
+      <strong>(1)</strong> Greedy picked D (h=8) over A (h=10) purely because D looks closer. But the road S→D costs 6, while S→A costs only 3. Greedy did not check this.<br>
+      <strong>(2)</strong> Greedy picked G (h=4) over F (h=5), but the road D→G costs 5 while D→F costs only 3. Again ignored.<br>
+      <strong>(3)</strong> If the graph had a slightly longer J→★ edge, Greedy's path would become suboptimal while S→A→C→F→I→★ remains optimal.<br><br>
+      <strong>In the exam, always write:</strong> "Greedy found path S→D→G→J→★ (cost 16). This path is NOT guaranteed optimal. Greedy used only h(n) estimates and ignored actual edge weights g(n). A* uses f(n) = g(n) + h(n) to guarantee the optimal result."</p>
+    </div>
+
+    <div class="exam-tip">
+      <strong>📝 Exam tip:</strong> In Greedy questions, write out the open list after each expansion, sorted by h. Show which node you pick each time and why (lowest h). Explicitly state: "Greedy ignores actual costs — it only uses h(n)." Calculate the actual total cost at the end and compare to A* to show it may not be optimal.
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ 5. A* -->
+<div class="algo-section" id="astar">
+  <div class="algo-header purple">
+    <div class="algo-tag">05 · Weighted Graph · Priority Queue · OPTIMAL (admissible h)</div>
+    <h2>A* Search</h2>
+    <div class="scenario">🗺️ GPS Navigation — City S to Airport ★, minimise total km driven</div>
+  </div>
+  <div class="algo-body">
+
+    <div class="answer-box info">
+      <h4>The Core Idea</h4>
+      <div class="formula">f(n) = g(n) + h(n)</div>
+      <p><strong>g(n)</strong> = actual cost from start to n (known exactly as we travel)<br>
+      <strong>h(n)</strong> = heuristic estimate of cost from n to goal (must be admissible: never overestimate)<br>
+      <strong>f(n)</strong> = best estimated total cost of a path through n<br><br>
+      A* always expands the node with the <strong>lowest f(n)</strong>. Because h is admissible, the first time we expand the goal node, we have found the true optimal path — we cannot do better.</p>
+    </div>
+
+    <div class="graph-box">
+      <h4>Graph — 13 nodes, weighted, with h(n) values</h4>
+      <div class="graph-mono">h(n) = admissible heuristic (straight-line estimate to Airport ★)
+
+Node h-values:  S=20  A=16  B=17  C=12  D=11
+                E=14  F=8   G=7   H=10  I=5   J=4   K=2   ★=0
+
+Key edges (weight):
+  S-A:4  S-B:6  S-D:9
+  A-C:3  A-D:5
+  B-E:4  B-H:8
+  C-F:5  D-F:4  D-G:7
+  E-G:6  E-H:5
+  F-I:4  G-I:6  G-J:5
+  H-J:9  I-K:3  I-★:8
+  J-K:5  J-★:7  K-★:3</div>
+    </div>
+
+    <div class="steps-container">
+      <div class="steps-label">A* execution — always expand lowest f = g+h</div>
+
+      <div class="step">
+        <div class="step-badge">0</div>
+        <div class="step-content">
+          <div class="step-title">Start: S. g=0, h=20, f=20</div>
+          <div class="step-state">Open: [S(f=20)] | Closed: {}</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">1</div>
+        <div class="step-content">
+          <div class="step-title">Expand S (f=20) → Add A, B, D</div>
+          <div class="step-desc">
+            A: g=4, h=16, f=20 &nbsp;|&nbsp; B: g=6, h=17, f=23 &nbsp;|&nbsp; D: g=9, h=11, f=20<br>
+            Tie between A(f=20) and D(f=20) — pick A first (tie-breaking by insertion order).
+          </div>
+          <div class="step-state">Open: [A(f=20), D(f=20), B(f=23)] → expand A</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">2</div>
+        <div class="step-content">
+          <div class="step-title">Expand A (g=4, f=20) → Add C, update D</div>
+          <div class="step-desc">
+            C: g=4+3=7, h=12, f=19 (NEW — added)<br>
+            D: currently f=20 via S. Via A: g=4+5=9, same as before — no update.
+          </div>
+          <div class="step-state">Open: [C(f=19), D(f=20), B(f=23)] → expand C</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">3</div>
+        <div class="step-content">
+          <div class="step-title">Expand C (g=7, f=19) → Add F</div>
+          <div class="step-desc">F: g=7+5=12, h=8, f=20. Neighbour A already closed.</div>
+          <div class="step-state">Open: [D(f=20), F(f=20), B(f=23)] → expand D</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">4</div>
+        <div class="step-content">
+          <div class="step-title">Expand D (g=9, f=20) → Check F, add G</div>
+          <div class="step-desc">
+            F via D: g=9+4=13 &gt; 12 (current) — no update. Keep F(g=12).<br>
+            G: g=9+7=16, h=7, f=23. Added.
+          </div>
+          <div class="step-state">Open: [F(f=20), B(f=23), G(f=23)] → expand F</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">5</div>
+        <div class="step-content">
+          <div class="step-title">Expand F (g=12, f=20) → Add I</div>
+          <div class="step-desc">I: g=12+4=16, h=5, f=21.</div>
+          <div class="step-state">Open: [I(f=21), B(f=23), G(f=23)] → expand I</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">6</div>
+        <div class="step-content">
+          <div class="step-title">Expand I (g=16, f=21) → Add K</div>
+          <div class="step-desc">K: g=16+3=19, h=2, f=21. ★ via I: g=16+8=24, h=0, f=24 — added but not best yet.</div>
+          <div class="step-state">Open: [K(f=21), ★via-I(f=24), B(f=23), G(f=23)] → expand K</div>
+        </div>
+      </div>
+
+      <div class="step highlight">
+        <div class="step-badge">7</div>
+        <div class="step-content">
+          <div class="step-title">Expand K (g=19, f=21) → ★ via K: g=19+3=22, f=22 — UPDATE ★!</div>
+          <div class="step-desc">★ was in open list with g=24. New path via K gives g=22 &lt; 24. Update: ★ now has g=22, f=22, parent=K.</div>
+          <div class="step-state">Open: [★(f=22), B(f=23), G(f=23)] → expand ★</div>
+        </div>
+      </div>
+
+      <div class="step success">
+        <div class="step-badge">✓</div>
+        <div class="step-content">
+          <div class="step-title">Expand ★ (g=22) — OPTIMAL PATH FOUND!</div>
+          <div class="step-desc">★ expanded with g=22. Trace back: ★←K←I←F←C←A←S</div>
+          <div class="path-chain">
+            <span class="pnode start">S</span><span class="parrow">→</span>
+            <span class="pnode normal">A</span><span class="cost-badge">g=4</span><span class="parrow">→</span>
+            <span class="pnode normal">C</span><span class="cost-badge">g=7</span><span class="parrow">→</span>
+            <span class="pnode normal">F</span><span class="cost-badge">g=12</span><span class="parrow">→</span>
+            <span class="pnode normal">I</span><span class="cost-badge">g=16</span><span class="parrow">→</span>
+            <span class="pnode normal">K</span><span class="cost-badge">g=19</span><span class="parrow">→</span>
+            <span class="pnode goal">★</span><span class="cost-badge">g=22</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="answer-box correct">
+      <h4>Why is A* guaranteed optimal? (Exam answer)</h4>
+      <p><strong>(1) Admissible heuristic:</strong> h(n) never overestimates — it is always ≤ true remaining cost. This means f(n) = g(n)+h(n) is always ≤ true total cost through n.<br>
+      <strong>(2) When A* expands a node</strong>, it has already found the cheapest possible path to that node. Any later path via a different route would have higher g (because that would have been expanded earlier if cheaper).<br>
+      <strong>(3) Key parent update:</strong> At step 7, ★ was already in the open list via I (g=24). When K was expanded, a cheaper route to ★ (g=22) was found, so the parent was updated to K. This is how A* avoids committing to suboptimal partial paths.<br>
+      <strong>(4)</strong> When ★ is finally expanded (not just discovered), its g=22 is the true minimum — proven because every other open node has f ≥ 22.</p>
+    </div>
+
+    <div class="exam-tip">
+      <strong>📝 Exam tip:</strong> In A* questions, maintain a table: Node | g | h | f | Parent. Update it after every expansion. Show when a node's g value is updated (improved). State clearly: "A* is optimal because h is admissible. When ★ is expanded, g=22 is the minimum possible because all other open nodes have f ≥ 22."
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ 6. TSP -->
+<div class="algo-section" id="tsp">
+  <div class="algo-header yellow">
+    <div class="algo-tag">06 · Combinatorial Optimisation · NP-Hard · Heuristics</div>
+    <h2>TSP — Travelling Salesperson Problem</h2>
+    <div class="scenario">📦 Delivery Driver — Warehouse (W) + 9 delivery addresses, minimise total route distance</div>
+  </div>
+  <div class="algo-body">
+
+    <div class="answer-box info">
+      <h4>The Core Idea</h4>
+      <p>Visit every city exactly once and return to start, with minimum total distance. With 10 cities: <strong>9! = 362,880</strong> possible routes. With 20 cities: 60 quadrillion. We cannot try them all — we use heuristics that give "good enough" answers fast.</p>
+    </div>
+
+    <div class="graph-box">
+      <h4>Cities (10 total including Warehouse W)</h4>
+      <div class="graph-mono">W  = Warehouse   (start + end)
+1  = Northwick    2  = Eastgate     3  = Old Quarter
+4  = Riverside    5  = Southpark    6  = Millbrook
+7  = Crossroads   8  = Hilltop      9  = Docklands
+
+All cities are directly connected (complete graph).
+Distance = Euclidean distance between their positions.</div>
+    </div>
+
+    <div class="steps-container">
+      <div class="steps-label">Three approaches compared</div>
+
+      <div class="step warn">
+        <div class="step-badge">①</div>
+        <div class="step-content">
+          <div class="step-title">Phase 1 — Random Route (baseline)</div>
+          <div class="step-desc">Order: W→3→6→1→4→7→2→9→5→8→W. Lines criss-cross the map — massive waste of travel. Used only as a worst-case baseline.</div>
+          <div class="step-state">Quality: ❌ Worst | Crossing edges everywhere</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">②</div>
+        <div class="step-content">
+          <div class="step-title">Phase 2 — Nearest Neighbour Algorithm (NNA)</div>
+          <div class="step-desc">
+            <strong>Rule:</strong> At each step, go to the nearest unvisited city.<br>
+            Step 1: From W, find nearest unvisited → Hilltop (8).<br>
+            Step 2: From 8, find nearest unvisited → Northwick (1).<br>
+            Step 3: From 1, find nearest → Eastgate (2).<br>
+            Continue until all cities visited, then return to W.<br>
+            Much shorter than random — fewer crossing edges.
+          </div>
+          <div class="step-state">Quality: ✓ Better | ~20-25% above optimal typically</div>
+        </div>
+      </div>
+
+      <div class="step success">
+        <div class="step-badge">③</div>
+        <div class="step-content">
+          <div class="step-title">Phase 3 — 2-opt Improvement</div>
+          <div class="step-desc">
+            <strong>Rule:</strong> For every pair of edges (A→B) and (C→D), check if swapping them — replacing with (A→C) and (B→D) — makes the route shorter. If yes, make the swap (reverse the segment between B and C). Keep swapping until no further improvement is possible.<br>
+            <strong>Why it works:</strong> Two crossing edges can ALWAYS be "uncrossed" to get a shorter total distance — this is a geometric fact.
+          </div>
+          <div class="step-state">Quality: ✓✓ Best of three | Locally optimal (no 2-edge swap can improve it)</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="answer-box correct">
+      <h4>Key exam points about TSP</h4>
+      <p><strong>Why NP-Hard?</strong> No known algorithm can find the OPTIMAL tour in polynomial time for large n. Brute force checks all (n-1)!/2 tours — exponential. Even with 20 cities that's 60 quadrillion routes.<br><br>
+      <strong>NNA is greedy:</strong> It makes the locally best choice (nearest city) at each step without looking ahead. The last few cities added often require long "back-fill" legs because NNA painted itself into a corner.<br><br>
+      <strong>2-opt is local search:</strong> It improves an existing tour. It will NEVER make a tour worse. But it only finds a <em>local optimum</em> — it cannot guarantee finding the global minimum.<br><br>
+      <strong>In the exam:</strong> Show the NNA step by step (current city → nearest unvisited → distance). Then explain what 2-opt does (identify crossing edges → swap → shorter route). State: "2-opt gives a locally optimal solution — no single 2-edge swap can improve it further, but the true global optimum may still be shorter."</p>
+    </div>
+
+    <div class="exam-tip">
+      <strong>📝 Exam tip:</strong> For NNA, always show a table: Step | Current City | Nearest Unvisited | Distance. For 2-opt, draw the crossing edges and show the "uncrossed" version. Always say "NNA ≈ 20-25% above optimal; 2-opt improves this but cannot guarantee the global minimum."
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ 7. 8-PUZZLE -->
+<div class="algo-section" id="puzzle">
+  <div class="algo-header blue">
+    <div class="algo-tag">07 · State-Space Search · BFS · Optimal (fewest moves)</div>
+    <h2>8-Puzzle — BFS Solver</h2>
+    <div class="scenario">🧩 Slide tiles on a 3×3 board from start arrangement to goal</div>
+  </div>
+  <div class="algo-body">
+
+    <div class="answer-box info">
+      <h4>The Core Idea</h4>
+      <p>Each <em>board configuration</em> is a <strong>node</strong>. Each legal tile slide is an <strong>edge</strong>. BFS finds the sequence of slides with the <strong>fewest moves</strong>. State space = up to 181,440 configurations (9!/2). BFS guarantees finding the minimum number of moves.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="col-box">
+        <h4>Start State</h4>
+        <div class="graph-mono">┌───┬───┬───┐
+│ 1 │ 2 │ 3 │
+├───┼───┼───┤
+│ 4 │   │ 6 │
+├───┼───┼───┤
+│ 7 │ 5 │ 8 │
+└───┴───┴───┘
+(tile 5 and 6 are swapped)</div>
+      </div>
+      <div class="col-box">
+        <h4>Goal State</h4>
+        <div class="graph-mono">┌───┬───┬───┐
+│ 1 │ 2 │ 3 │
+├───┼───┼───┤
+│ 4 │ 5 │ 6 │
+├───┼───┼───┤
+│ 7 │ 8 │   │
+└───┴───┴───┘
+(ordered 1–8, blank bottom-right)</div>
+      </div>
+    </div>
+
+    <div class="steps-container">
+      <div class="steps-label">BFS solution — each step shows which tile slides into the blank</div>
+
+      <div class="step">
+        <div class="step-badge">0</div>
+        <div class="step-content">
+          <div class="step-title">Start: [1,2,3,4,0,6,7,5,8] — blank at position 4 (centre)</div>
+          <div class="step-desc">From centre blank, legal slides: tile 2 (down), tile 4 (right), tile 5 (up), tile 6 (left). All 4 children added to BFS queue.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">1</div>
+        <div class="step-content">
+          <div class="step-title">Move 1: Slide tile 5 UP into the blank</div>
+          <div class="step-desc">5 slides up to position 4. Board: [1,2,3,4,5,6,7,0,8]. Blank is now at position 7 (bottom centre).</div>
+          <div class="step-state">[1,2,3,4,5,6,7,0,8]</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">2</div>
+        <div class="step-content">
+          <div class="step-title">Move 2: Slide tile 8 LEFT into the blank</div>
+          <div class="step-desc">8 slides left to position 7. Board: [1,2,3,4,5,6,7,8,0]. Blank is now at position 8 (bottom right) — this IS the goal!</div>
+          <div class="step-state">[1,2,3,4,5,6,7,8,0] ✓ GOAL!</div>
+        </div>
+      </div>
+
+      <div class="step success">
+        <div class="step-badge">✓</div>
+        <div class="step-content">
+          <div class="step-title">Solved in 2 moves — BFS guarantees this is minimum</div>
+          <div class="step-desc">BFS explored all 1-move states before any 2-move state. The goal was reached at depth 2. No 1-move solution exists (only one tile differs from goal: 5 and blank swapped), so 2 is optimal.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="answer-box correct">
+      <h4>Why is 2 moves optimal? (Exam answer)</h4>
+      <p>BFS explores all states reachable in 1 move before exploring any state reachable in 2 moves. It checked all 4 possible 1-move states from the start — none of them was the goal. It then checked 2-move states — and found the goal immediately. Since BFS found it at depth 2, <strong>no solution of length 1 or 0 exists</strong>, proving 2 is the minimum.</p>
+    </div>
+
+    <div class="exam-tip">
+      <strong>📝 Exam tip:</strong> Draw the board after every move. State which tile slides and in which direction. Count the number of misplaced tiles (Manhattan distance) to justify why the answer can't be shorter. Show BFS layers: "depth 0 = start, depth 1 = 4 states (all checked, none = goal), depth 2 = found goal."
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ 8. DECISION TREE -->
+<div class="algo-section" id="decision">
+  <div class="algo-header green">
+    <div class="algo-tag">08 · Classification · Tree Traversal · Rule-based</div>
+    <h2>Decision Tree — Bank Loan Application</h2>
+    <div class="scenario">🏦 Applicant Sarah applies for a loan — decision tree classifies: Approve / Reject / Conditional</div>
+  </div>
+  <div class="algo-body">
+
+    <div class="answer-box info">
+      <h4>The Core Idea</h4>
+      <p>A Decision Tree makes a sequence of binary questions (yes/no). Each internal node is a question; each leaf is a decision. To classify, start at the root and follow YES or NO branches based on the applicant's data until you reach a leaf.</p>
+    </div>
+
+    <div class="graph-box">
+      <h4>Sarah's Profile + Decision Tree Structure</h4>
+      <div class="graph-mono">Sarah's data:
+  Credit Score : 620   (threshold: 700)
+  Annual Income: £35,000 (threshold: £30,000)
+  Existing Debts: No
+  Loan Amount  : £3,000 (threshold: £5,000)
+  Employment   : Stable
+
+Decision Tree:
+  ROOT: Credit Score > 700?
+  ├── NO  → Loan Amount < £5,000?
+  │         ├── YES → Employment Stable?
+  │         │         ├── YES → ✅ Small Loan Approved
+  │         │         └── NO  → ❌ Rejected (unstable income)
+  │         └── NO  → ❌ Rejected (high risk)
+  └── YES → Income > £30,000?
+            ├── NO  → ❌ Rejected (low income)
+            └── YES → Existing Debts?
+                      ├── YES → ⚠️ Conditional Approval
+                      └── NO  → ✅ Fully Approved</div>
+    </div>
+
+    <div class="steps-container">
+      <div class="steps-label">Tracing Sarah's application through the tree</div>
+
+      <div class="step">
+        <div class="step-badge">Q1</div>
+        <div class="step-content">
+          <div class="step-title">ROOT: Credit Score > 700?</div>
+          <div class="step-desc">Sarah's credit score = 620. Is 620 &gt; 700? <strong>NO</strong> → take the NO (right) branch.</div>
+          <div class="step-state">620 > 700? → NO → go to "Loan Amount < £5,000?"</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">Q2</div>
+        <div class="step-content">
+          <div class="step-title">Loan Amount &lt; £5,000?</div>
+          <div class="step-desc">Sarah's loan = £3,000. Is £3,000 &lt; £5,000? <strong>YES</strong> → take the YES branch.</div>
+          <div class="step-state">£3,000 < £5,000? → YES → go to "Employment Stable?"</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-badge">Q3</div>
+        <div class="step-content">
+          <div class="step-title">Employment Stable?</div>
+          <div class="step-desc">Sarah has stable employment → <strong>YES</strong>.</div>
+          <div class="step-state">Stable? → YES → reach LEAF: ✅ Small Loan Approved</div>
+        </div>
+      </div>
+
+      <div class="step success">
+        <div class="step-badge">✓</div>
+        <div class="step-content">
+          <div class="step-title">Decision: ✅ Small Loan Approved — 3 questions asked</div>
+          <div class="step-desc">Despite low credit score, Sarah gets the small loan because: (1) loan is small, (2) employment is stable. The decision tree reached this conclusion in just 3 binary questions.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="answer-box correct">
+      <h4>Why Decision Trees are useful — Exam points</h4>
+      <p><strong>(1) Interpretable:</strong> You can trace exactly why a decision was made (unlike neural networks — "black boxes").<br>
+      <strong>(2) Fast classification:</strong> O(depth) to classify any instance — just follow branches top to bottom.<br>
+      <strong>(3) Handles mixed data:</strong> Both numeric thresholds (credit &gt; 700) and categorical features (employed Y/N).<br>
+      <strong>(4) Overfitting risk:</strong> Deep trees memorise training data. Pruning (cutting shallow branches) is used to improve generalisation.<br>
+      <strong>(5) Greedy construction:</strong> Trees are built top-down using information gain or Gini impurity to choose which feature to split on at each node.</p>
+    </div>
+
+    <div class="exam-tip">
+      <strong>📝 Exam tip:</strong> When tracing a decision tree, write each question as Q1, Q2, Q3 and explicitly write the answer (YES/NO) and which branch you take. At the leaf, state the final decision and count how many questions were needed. If asked "could a different tree structure reach the same decision?" — YES, tree structure depends on the training algorithm and split criterion.
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ 9. CHEAT SHEET -->
+<div class="algo-section" id="cheatsheet">
+  <div class="algo-header">
+    <div class="algo-tag">09 · Quick Reference</div>
+    <h2>Exam Cheat Sheet — What to Write</h2>
+  </div>
+  <div class="algo-body" style="padding:0 24px 24px;">
+
+    <br>
+    <div class="steps-label">For every search algorithm, your exam answer must include:</div>
+
+    <div class="two-col">
+      <div class="col-box">
+        <h4>BFS Answer Structure</h4>
+        <ul>
+          <li>Initial queue state</li>
+          <li>After each dequeue: node popped, neighbours found, queue updated</li>
+          <li>State "all depth-N nodes explored before depth-N+1"</li>
+          <li>Traceback via parent pointers</li>
+          <li>"Optimal because first discovery = minimum depth"</li>
+        </ul>
+      </div>
+      <div class="col-box">
+        <h4>DFS Answer Structure</h4>
+        <ul>
+          <li>Stack state after each push/pop</li>
+          <li>Note dead-ends as "backtrack"</li>
+          <li>Show parent pointers building up</li>
+          <li>Traceback path</li>
+          <li><strong>Always say: "NOT guaranteed optimal"</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="col-box">
+        <h4>A* Answer Structure</h4>
+        <ul>
+          <li>Table: Node | g | h | f | Parent</li>
+          <li>Show f=g+h calculation for every node</li>
+          <li>Show any parent updates when cheaper path found</li>
+          <li>When goal expanded: state g = optimal cost</li>
+          <li>"Optimal because h is admissible"</li>
+        </ul>
+      </div>
+      <div class="col-box">
+        <h4>Greedy Answer Structure</h4>
+        <ul>
+          <li>Open list sorted by h(n) after each step</li>
+          <li>Show which node chosen and why (lowest h)</li>
+          <li>Calculate actual total cost at end</li>
+          <li><strong>Always say: "NOT guaranteed optimal — ignores g(n)"</strong></li>
+          <li>Compare with A* optimal</li>
+        </ul>
+      </div>
+    </div>
+
+    <br>
+    <div class="steps-label">Critical facts to memorise</div>
+
+    <div class="answer-box key">
+      <h4>Optimality — The Key Exam Question</h4>
+      <p>
+      <strong>BFS is optimal</strong> for unweighted graphs — fewest edges. Not optimal if edges have different weights.<br>
+      <strong>A* is optimal</strong> for weighted graphs IF h(n) is admissible (never overestimates true cost).<br>
+      <strong>Greedy is NOT optimal</strong> — ignores actual cost g(n), only uses estimate h(n).<br>
+      <strong>DFS is NOT optimal</strong> — may find a longer path if it dives down the wrong branch first.<br>
+      <strong>DFDB is NOT optimal</strong> — may not even find the goal if it's deeper than limit L.<br>
+      <strong>NNA (TSP) is NOT optimal</strong> — greedy local choice doesn't guarantee minimum tour.<br>
+      <strong>2-opt is locally optimal</strong> — no 2-edge swap improves it, but global optimum may differ.
+      </p>
+    </div>
+
+    <div class="answer-box info">
+      <h4>Data Structures</h4>
+      <p>
+      <strong>BFS</strong> → Queue (FIFO): add to back, remove from front → level-by-level exploration<br>
+      <strong>DFS / DFDB</strong> → Stack (LIFO): add to top, remove from top → deep exploration<br>
+      <strong>Greedy / A*</strong> → Priority Queue: always remove the node with lowest priority value<br>
+      &nbsp;&nbsp;Greedy priority = h(n) &nbsp;&nbsp;|&nbsp;&nbsp; A* priority = f(n) = g(n) + h(n)
+      </p>
+    </div>
+
+    <div class="answer-box warn">
+      <h4>Common Exam Mistakes</h4>
+      <p>
+      ❌ Saying "DFS found the shortest path" — should say "DFS found a path but it's not guaranteed shortest."<br>
+      ❌ Saying "Greedy is optimal" — it is not; it ignores actual edge costs.<br>
+      ❌ Forgetting to update parent pointers in A* when a cheaper path is found.<br>
+      ❌ In BFS/DFS, adding a node to queue/stack AGAIN if it was already visited.<br>
+      ❌ Confusing "complete" (always finds a solution if one exists) with "optimal" (finds the BEST solution).<br>
+      ❌ In TSP, claiming 2-opt gives the globally optimal tour — it gives a locally optimal one.<br>
+      ❌ Forgetting to return to start in TSP (the tour must be a cycle: W→…→W).
+      </p>
+    </div>
+
+    <div class="exam-tip" style="margin:16px 0 0;">
+      <strong>📝 Most important exam sentence:</strong> For any algorithm that is NOT optimal, always write: "Algorithm X found path P. This is <em>not</em> guaranteed to be optimal because [reason specific to algorithm]. To find the guaranteed optimal path, use [better algorithm] instead."
+    </div>
+
+  </div>
+</div>
+
+</div><!-- end page-wrap -->
+</body>
+</html>
